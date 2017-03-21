@@ -23,6 +23,10 @@ export default new Router({
       name: 'DispatchDetail',
       component: require('../views/DispatchDetail')
     }, {
+      path: '/send',
+      name: 'Send',
+      component: require('../views/Send')
+    }, {
       path: '/income',
       name: 'Income',
       component: require('../views/Income')
@@ -34,6 +38,14 @@ export default new Router({
       path: '/income/detail',
       name: 'IncomeDetail',
       component: require('../views/IncomeDetail')
+    }, {
+      path: '/courier',
+      name: 'Courier',
+      component: require('../views/Courier')
+    }, {
+      path: '/courier/detail',
+      name: 'CourierDetail',
+      component: require('../views/CourierDetail')
     }]
   }, {
     path: '/date',

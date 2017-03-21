@@ -1,0 +1,189 @@
+测试接口
+http://192.168.0.201:8890/StatisticalReports/courier?userId=2367&startTime=2017-01-15&endTime=2017-03-15&brandId=0
+http://192.168.0.201:8890/StatisticalReports/courier
+参数：userId:用户ID
+      startTime:开始时间（没有给空）格式：yyyy-MM-dd
+      endTime:结束时间（没有给空）  格式：yyyy-MM-dd
+      brandId:品牌ID （0.返回全部品牌）
+返回值：brand:{"brand":"品牌","id":"品牌ID"，id_user:"用户ID"}
+        startTime:开始时间      endTime：结束时间
+        userId:用户时间
+        courier:{"id":"编号id","img":"头像地址","name":"快递员名称","signNum":"签收数量","deliveryNum":"派件数量"}
+返回值例子：
+{
+    "brand": [
+        {
+            "brand": "龙邦",
+            "id": 478,
+            "id_user": 2367
+        },
+        {
+            "brand": "全峰",
+            "id": 489,
+            "id_user": 2367
+        }
+    ],
+    "courier": [
+        {
+            "id":49
+            "img": "http://106.75.27.239:8088/Things/Files/e4a6222cdb5b34375400904f03d8e6a5.png",
+            "name": "陈师傅",
+            "deliveryNum": 4,
+            "signNum": 2
+        },
+        {
+            "id":50
+            "img": "",
+            "name": "郁曍",
+            "deliveryNum": 2,
+            "signNum": 1
+        }
+    ],
+    "endTime": "2017-03-28",
+    "startTime": "2017-01-01",
+    "userId": 2367
+}
+
+
+
+
+
+
+http://192.168.0.201:8890/StatisticalReports/courierdetails?userId=2367&id=49&startTime=207-01-01&endTime=2017-03-29&brandId=0
+http://192.168.0.201:8890/StatisticalReports/courierdetails
+参数：userId：用户ID
+      startTime:开始时间
+      endTime:结束时间
+      brandId:品牌ID （0.返回全部品牌）
+      id:编号ID
+返回值：brand:{"brand":"品牌","id":"品牌ID"，id_user:"用户ID"}
+        "send": 正在派件,
+        "sign": 签收,
+        "back": 退回, 
+        startTime:开始时间
+        endTime:结束时间
+返回值例子：
+  {
+    "brand": [
+        {
+            "brand": "龙邦",
+            "id": 478,
+            "id_user": 2367
+        },
+        {
+            "brand": "全峰",
+            "id": 489,
+            "id_user": 2367
+        }
+    ], 
+    "send": 0,
+    "sign": 0,
+    "back": 0,
+    "startTime": "2017-03-15"，
+    "endTime": "2017-03-15"
+}
+
+
+
+
+
+
+
+
+
+
+http://192.168.0.201:8890/StatisticalReports/in2?value=派件&id=49&userId=2367&brandId=3&startTime=0&endTime=1988612594010
+http://192.168.0.201:8890/StatisticalReports/in2
+参数：value:（派件，签收，退回）
+      id：编号ID
+      userId:用户ID
+      brandId:品牌ID
+      startTime:开始时间
+      endTime:结束时间
+返回值：message：{
+                  "brand": 品牌名,
+                  "brandId": 品牌ID
+                  "code": 货架号
+                 
+                  "code":"货架号",
+                  "create_time":"时间",
+                  "expresstype":快递类型（0普通间 1到付件 2代收货款）
+                  "id":编号id
+                  "id_user":用户ID,
+                   "mobile":"手机号",
+                  "img":"用户头像",
+                  "order_sn":"216307800053",
+                  "state":快递状态}
+      num:总计数量
+      startTime:开始时间
+      endTime:结束时间
+返回值例子：
+{
+   
+    "message": [
+        {
+            "brand": "优速",
+            "brandId": 2,
+            "code": "A-0-0001",
+            "create_time": "1489487347000",
+            "endTime": "",
+            "expresstype": "0",
+            "id": 49,
+            "id_user": 2367,
+            "img": "http://106.75.27.239:8088/Things/Files/e4a6222cdb5b34375400904f03d8e6a5.png",
+            "mobile": "",
+            "name": "陈师傅",
+            "order_sn": "216307800053",
+            "startTime": "",
+            "state": 103
+        }
+    ],
+    "num": 1,
+    "startTime": "2016-03-15"，
+    "endTime": "2017-03-16"
+}
+
+
+
+http://192.168.0.201:8890/StatisticalReports/OrderSndetail?userId=2367&brandId=3&orderSn=216307800026&code=A-0-0002&callee=&expresstype=0
+http://192.168.0.201:8890/StatisticalReports/OrderSndetail
+参数:userId:用户ID      brandId:快递品牌ID        orderSn:运单号       code:货架号      callee：手机号     expresstype:快递类型（0普通间 1到付件 2代收货款） url：签收照图片地址
+    details： [{"createTime": "时间", 
+                "messageModel": "短信模板内容",
+                 "name": "操作人",
+                 "operation": （5.云通知，101.到件,102.上架，103.分派，301.签收，302.退回，201问题件）
+                 "people": "分派人",
+                 "sendtype": 0.短信 1.云呼 2.云呼加短信
+                 "state": 0等待数据 1成功 2未接听 3空号 4线路故障 5失败 101到件 102上架 103分派 301签收 302退回201问题件
+返回值例子：
+{
+    "brand": "龙邦",
+    "callee": "",
+    "code": "A-0-0002",
+    "details": [
+        {
+            "createTime": "1489219086756",
+            "messageModel": "",
+            "name": "111",
+            "operation": 301,
+            "people": "郁曍",
+            "sendtype": 0,
+            "state": 301
+       },
+        {
+            "createTime": "1488611270434",
+            "messageModel": "",
+            "name": "Hh",
+            "operation": 101,
+            "people": "郁曍",
+            "sendtype": 0,
+            "state": 101
+        }
+    ],
+    "expresstype": 0,
+    "orderSn": "216307800026",
+    "url": "http://192.168.0.201:8890/Things/sign/23671489038991256.png"
+}
+ 
+
+

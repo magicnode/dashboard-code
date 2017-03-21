@@ -1,0 +1,115 @@
+http://192.168.0.201:8890/StatisticalReports/send?userId=2367&startTime=&endTime=&brandId=0&type=0
+http://192.168.0.201:8890/StatisticalReports/send
+参数：userId：用户ID  
+   (String) startTime:开始时间（没有给空）
+   (String)  endTime:结束时间（没有给空）
+  （int）  brandId(没选给0)
+  （int） type: 1:支付宝支付 2:微信支付  3:余额支付  4:线下现金支付
+返回值："num1":寄件费,
+        "num2":代收货款,
+        "num3":到付件,
+        "num4":派件费,
+        "num5":保价费,
+        startTime:开始时间
+        endTime:结束时间
+        brand:{"brand":"品牌","id":"品牌ID"，id_user:"用户ID"}
+
+返回值例子：
+{
+    "brand": [
+        {
+            "brand": "龙邦",
+            "id": 478,
+            "id_user": 2367
+        },
+        {
+            "brand": "全峰",
+            "id": 489,
+            "id_user": 2367
+        }
+    ],
+    "endTime": "2017-03-15",
+    "num1": 0,
+    "num2": 2,
+    "num3": 0,
+    "num4": 0,
+    "num5": 0,
+    "startTime": "2017-03-15"
+}
+
+
+
+http://192.168.0.201:8890/StatisticalReports/sendType?userId=2367&feetype=3&startTime=2017-01-01&endTime=2017-05-05&brandId=0
+参数：userId:用户ID   
+      feetype:(1.寄件费,2.代收货款,3.到付件,4.派件费,5.保价费)
+      (String) startTime:开始时间（没有给空）
+      (String) endTime:结束时间（没有给空）
+      userId：用户id
+      brandId:品牌id
+返回值：brandId:快递品牌ID    
+        expressType:1.普通件   
+        fee: 订单类型        （1.寄件费,2.代收货款,3.到付件）
+        feeType：费用
+        id_user":用户ID
+        mobile：短信模板内容
+        orderSn：运单号
+        order_id：订单号id
+        pay_time:付款时间
+        pay_type：付款类型  1:支付宝支付 2:微信支付  3:余额支付  4:线下现金支付
+        status：状态描述
+        supportValue：保价费
+        weight：重量
+返回值例子：
+[
+    {
+        "brandId": 3,
+        "expressType": 1,
+        "fee": 2,
+        "feeType": 2,
+        "id": 105,
+        "id_user": 2367,
+        "mobile": "",
+        "orderSn": "2",
+        "order_id": "201703071552326180",
+        "pay_time": "1488873152571",
+        "pay_type": 4,
+        "status": "success",
+        "supportValue": 0,
+        "weight": 0
+    }
+]
+
+http://192.168.0.201:8890/StatisticalReports/SendDtails?orderId=201703071552326180
+参数：orderId:订单号ID
+返回值：brandId:快递品牌ID    
+        expressType:1.普通件   
+        fee: 订单类型        （1.寄件费,2.代收货款,3.到付件）
+        feeType：费用
+        id_user":用户ID
+        mobile：短信模板内容
+        orderSn：运单号
+        order_id：订单号id
+        pay_time:付款时间
+        pay_type：付款类型  1:支付宝支付 2:微信支付  3:余额支付  4:线下现金支付
+        status：状态描述
+        supportValue：保价费
+        weight：重量
+返回值例子：
+[
+    {
+        "brandId": 3,
+        "expressType": 1,
+        "fee": 2,
+        "feeType": 2,
+        "id": 105,
+        "id_user": 2367,
+        "mobile": "",
+        "orderSn": "2",
+        "order_id": "201703071552326180",
+        "pay_time": "1488873152571",
+        "pay_type": 4,
+        "status": "success",
+        "supportValue": 0,
+        "weight": 0
+    }
+]

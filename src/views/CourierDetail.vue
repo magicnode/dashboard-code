@@ -1,0 +1,344 @@
+<template>
+     <div class="courier">
+        <div class="courier-changedate" @click="changeModal"></div>
+        <div v-if="modalVisi" class="courier-date">
+          <div class="courier-date-choose">
+            <div style="text-align: right;padding-right:.3rem;" @click="openPicker('pickerLeft')">
+              <input type="text" name="" readonly :value="nowday">
+            </div>
+            <div>
+              <span>—</span>
+            </div>
+            <div style="text-align: left;padding-left: .3rem;" @click="openPicker('pickerRight')">
+              <input type="text" name="" readonly :value="nowday">
+            </div>
+          </div>
+          <div class="courier-date-cover" style="z-index: 2000;" @click="changeModal">
+          </div>
+        </div>
+        <div class="courier-total">
+          <div class="select-back" @click="changesheetVisible">
+            {{brand}}
+          </div>
+          <div class="courier-total-time">
+            <span>{{startTime}}</span>
+            <span>--</span>
+            <span>{{endTime}}</span>
+          </div>
+          <mt-actionsheet
+            :actions="actions"
+            v-model="sheetVisible">
+          </mt-actionsheet>
+        </div>
+        <div class="courier-detail">
+          
+        </div>
+        <div class="courier-express">
+          <div class="courier-express-list" v-for="item in courierData">
+              <div class="courier-express-list-img">
+                <img :src="item.img" alt="">
+              </div>
+              <div class="courier-express-list-time">
+                <p>{{item.name}}</p>
+              </div>
+              <div class="courier-express-list-total">
+                <p class="sign">{{item.count}}</p>
+              </div>          
+          </div>
+        </div>
+        <mt-datetime-picker ref="pickerLeft" type="date" v-model="dateLeft" @confirm="handleChange">
+        </mt-datetime-picker>
+        <mt-datetime-picker ref="pickerRight" type="date" v-model="dateRight" @confirm="handleChange">
+        </mt-datetime-picker>
+     </div>
+</template>
+<script>
+import { Toast, MessageBox } from 'mint-ui'
+import { mapState } from 'vuex'
+import axios from 'axios'
+import sendPng from '../assets/sta_ico_dis.png'
+import signPng from '../assets/sta_ico_sig.png'
+import backPng from '../assets/sta_ico_ret.png'
+
+export default {
+  name: 'courierdetail',
+  created () {
+    this.$store.commit('setTitle', '快递员')
+    let nowdate = new Date()
+    nowdate = nowdate.getFullYear() + '-' + (nowdate.getMonth() + 1) + '-' + nowdate.getDate()
+    this.dateRight = this.dateLeft = nowdate
+    this.nowday = nowdate
+    const query = this.$route.query
+    this.courier = query
+    console.log('query', this.courier)
+    this.initCourierData()
+  },
+  data () {
+    return {
+      courierData: {
+        send: {
+          name: '正在派件',
+          count: 0,
+          img: sendPng
+        },
+        sign: {
+          name: '签收',
+          count: 0,
+          img: signPng
+        },
+        back: {
+          name: '退回',
+          count: 0,
+          img: backPng
+        }
+      },
+      courier: {
+        name: '',
+        img: '',
+        id: ''
+      },
+      total: 1500,
+      nowday: null,
+      dateLeft: null,
+      dateRight: null,
+      startTime: null,
+      endTime: null,
+      brandId: 0,
+      modalVisi: false,
+      sheetVisible: false,
+      paysheetVisible: false,
+      brand: '全部品牌',
+      actions: [{
+        name: '全部品牌',
+        method: () => {
+          this.changeBrand(0)
+        }
+      }]
+    }
+  },
+  computed: {
+    ...mapState(['api', 'userId'])
+  },
+  methods: {
+    openPicker (picker) {
+      this.$refs[picker].open()
+    },
+    initCourierData () {
+      const query = this.$route.query
+      const startTime = query.startTime || '2017-01-15'
+      const endTime = query.endTime || '2017-03-15'
+      const brandId = query.brandId || '0'
+      const id = query.id || '0'
+      this.startTime = startTime
+      this.endTime = endTime
+      this.brandId = brandId
+      this.id = id
+      this.setCourierData()
+    },
+    getUrl () {
+      const url = this.api.courierdetail + '?userId=' + this.userId + '&startTime=' + this.startTime + '&endTime=' + this.endTime + '&brandId=' + this.brandId + '&id=' + this.id
+      return url
+    },
+    setCourierData () {
+      console.log('set url', this.getUrl())
+      let instance = axios.create({
+        timeout: 2000
+      })
+      instance.get(this.getUrl())
+        .then((res) => {
+          if (res.status === 200) {
+            const data = res.data
+            const brands = data.brand
+            /* eslint-disable no-undef */
+            this.courierData[send].count = data.send
+            this.courierData[sign].count = data.sign
+            this.courierData[back].count = data.back
+            this.actions = [{
+              name: '全部品牌',
+              method: () => {
+                this.changeBrand(0)
+              }
+            }]
+            for (let i = 0, len = brands.length; i < len; i++) {
+              let name = brands[i].brand
+              let item = {
+                name: name,
+                method: () => {
+                  this.changeBrand(brands[i].id)
+                }
+              }
+              this.actions.push(item)
+            }
+          } else {
+            Toast({
+              message: '数据获取失败!',
+              position: 'bottom'
+            })
+          }
+        })
+        .catch(err => {
+          console.error(err)
+          MessageBox.confirm('超时, 点击确认刷新').then(action => {
+            this.setCourierDate()
+          })
+        })
+    },
+    changeBrand (val) {
+      console.log('val', val)
+      this.brandId = val
+      const that = this
+      setTimeout(function () {
+        that.setCourierData()
+      }, 1500)
+    },
+    handleChange (value) {
+      Toast({
+        message: '已选择 ' + value.toString(),
+        position: 'bottom'
+      })
+    },
+    changesheetVisible () {
+      this.sheetVisible ? this.sheetVisible = false : this.sheetVisible = true
+    },
+    changepaysheetVisible () {
+      this.paysheetVisible ? this.paysheetVisible = false : this.paysheetVisible = true
+    },
+    changeModal () {
+      this.modalVisi ? (this.modalVisi = false) : (this.modalVisi = true)
+    }
+  }
+}
+</script>
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style lang="less" scoped>
+  .flex {
+    display: flex;
+  }
+  .courier {
+    &-changedate {
+      z-index:2001;
+      position: absolute;
+      top: 0;
+      right:0;
+      width: 50px;
+      height:40px;
+      background-image: url('../assets/calendar.png');
+      background-repeat: no-repeat;
+      background-size: 1.6rem 1.7rem;
+      background-position: 1.4rem .8rem;
+    }
+    &-total {
+      border-top: 1px solid rgb(0, 51, 102);
+      text-align: center;
+      display: block;
+      color: rgb(255, 255, 255);
+      font-size: 1.5rem;
+      padding: .8rem 1rem;
+      display: flex;
+      border-bottom: 1px solid #999;
+      &-time {
+        color: #666;
+      }
+      .border-both {
+        border-left: 1px solid #003366;
+        border-right: 1px solid #003366;
+      }
+      .select-back {
+        text-align: left;
+        color: black;
+        background: url('../assets/min_ico_2r.png') no-repeat scroll right center transparent;
+        background-size: 10% 40%;
+        background-position: 50% 6px;
+      }
+      div {
+        flex:1;
+        font-size:1.3rem;
+      }
+    }
+    
+    &-time {
+      padding: 0.5rem 0;
+      font-size: 1.2rem;
+      color: #666;
+      border-bottom: 1px solid #999;
+    }
+    
+    &-express {
+      &-list {
+        .flex;      
+        padding: .4rem .4rem;
+        border-bottom: 1px solid #f1f1f1;
+        &-img {
+          flex: 1;
+          img {
+            border-radius: 50%;
+            width: 3.5rem;
+            vertical-align: baseline;
+          }
+        }
+
+        &-time {
+          text-align: left;
+          flex: 3;
+          line-height: 3rem;
+          padding: .4rem .3rem;
+          p {
+            font-size: 1.4rem;
+          }
+          span {
+            color: gray;
+            padding-top: 0.15rem;
+          }
+        }
+
+        &-total {
+          flex: 2;
+          text-align: right;
+          padding-right: 0.6rem;
+          line-height: 1.9rem;
+          font-size: 1.4rem;
+          .sign {
+            color: #0661a2;
+          }
+        }
+      }
+
+    }
+
+    &-date {
+      position: absolute;
+      &-choose {
+        overflow: hidden;
+        background: #fff;
+        padding: 1.7rem 0.1rem;
+        display: flex;
+        input {
+          background-image: url('../assets/sta_ico_cal.png');
+          background-repeat: no-repeat;
+          background-position: 8rem .6rem;
+          background-size: 1.6rem 1.7rem;
+          padding: .7rem .6rem;
+          font-size: 1.4rem;
+          width: 77%;
+          border: 1px solid rgb(221,221,221);
+        }
+        span {
+          line-height: 2.7rem;
+        }
+
+      }
+
+      &-cover {
+        overflow: hidden;
+        background-color: rgb(0, 0, 0);
+        opacity: 0.7;
+        position: fixed;
+        left: 0px;
+        right: 0px;
+        top: 111.84px;
+        bottom: 0px;
+        display: block;
+      }
+    }
+  }
+</style>
