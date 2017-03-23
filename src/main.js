@@ -3,6 +3,7 @@
 import Vue from 'vue'
 import VueResource from 'vue-resource'
 import MintUI from 'mint-ui'
+import axios from 'axios'
 import VueAwesomeSwiper from 'vue-awesome-swiper'
 
 import App from './App'
@@ -22,6 +23,7 @@ Vue.component('dh-chart', {
   template: Chart
 })
 
+Vue.axios = axios
 Vue.config.productionTip = false
 
 router.afterEach((to, from) => {

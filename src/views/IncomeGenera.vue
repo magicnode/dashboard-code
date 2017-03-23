@@ -173,7 +173,7 @@ export default {
             font-size: 1.3rem;
             color: #666;
             img {
-              width: 5rem;
+              width: 4rem;
             }
           }
           .img {
@@ -186,7 +186,7 @@ export default {
             padding-left: .7rem;
             .weight {
               white-space: nowrap;
-              padding: .6rem .5rem;
+              padding: .4rem .6rem;
               color: white;
               background-color: #f18716;
             }

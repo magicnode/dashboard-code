@@ -8,6 +8,7 @@
      </div>
 </template>
 <script>
+import { mapActions } from 'vuex'
 import dispatchPng from '../assets/sta_btn_dis.png'
 import sendPng from '../assets/sta_btn_sen.png'
 import incomePng from '../assets/sta_btn_inc.png'
@@ -17,6 +18,7 @@ export default {
   name: 'list',
   created () {
     this.$store.commit('setTitle', '统计报表')
+    this.getBrand()
   },
   data () {
     return {
@@ -38,6 +40,9 @@ export default {
     }
   },
   methods: {
+    ...mapActions({
+      getBrand: 'GET_BRAND'
+    }),
     handleChange (val) {
       this.$router.push({path: val})
     }

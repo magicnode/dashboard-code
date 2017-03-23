@@ -4,13 +4,13 @@
         <div v-if="modalVisi" class="courier-date">
           <div class="courier-date-choose">
             <div style="text-align: right;padding-right:.3rem;" @click="openPicker('pickerLeft')">
-              <input type="text" name="" readonly :value="nowday">
+              <input type="text" name="" readonly :value="dateLeftFormate">
             </div>
             <div>
               <span>—</span>
             </div>
             <div style="text-align: left;padding-left: .3rem;" @click="openPicker('pickerRight')">
-              <input type="text" name="" readonly :value="nowday">
+              <input type="text" name="" readonly :value="dateRightFormate">
             </div>
           </div>
           <div class="courier-date-cover" style="z-index: 2000;" @click="changeModal">
@@ -31,7 +31,8 @@
           </mt-actionsheet>
         </div>
         <div class="courier-detail">
-          
+          <img :src="courier.img" alt="">
+          <p>{{ courier.name }}</p>
         </div>
         <div class="courier-express">
           <div class="courier-express-list" v-for="item in courierData">
@@ -46,9 +47,23 @@
               </div>          
           </div>
         </div>
-        <mt-datetime-picker ref="pickerLeft" type="date" v-model="dateLeft" @confirm="handleChange">
+        <mt-datetime-picker 
+          ref="pickerLeft"
+          type="date"
+          v-model="dateLeft"
+          year-format="{value} 年"
+          month-format="{value} 月"
+          date-format="{value} 日" 
+          @confirm="handleChangeLeft">
         </mt-datetime-picker>
-        <mt-datetime-picker ref="pickerRight" type="date" v-model="dateRight" @confirm="handleChange">
+        <mt-datetime-picker 
+          ref="pickerRight"
+          type="date"
+          v-model="dateRight"
+          year-format="{value} 年"
+          month-format="{value} 月"
+          date-format="{value} 日"
+          @confirm="handleChange">
         </mt-datetime-picker>
      </div>
 </template>
@@ -56,6 +71,7 @@
 import { Toast, MessageBox } from 'mint-ui'
 import { mapState } from 'vuex'
 import axios from 'axios'
+import courierPng from '../assets/man_btn_peo.png'
 import sendPng from '../assets/sta_ico_dis.png'
 import signPng from '../assets/sta_ico_sig.png'
 import backPng from '../assets/sta_ico_ret.png'
@@ -69,8 +85,11 @@ export default {
     this.dateRight = this.dateLeft = nowdate
     this.nowday = nowdate
     const query = this.$route.query
+    const httpReg = new RegExp('http', ['g'])
+    if (!httpReg.test(query.img)) {
+      query.img = courierPng
+    }
     this.courier = query
-    console.log('query', this.courier)
     this.initCourierData()
   },
   data () {
@@ -129,8 +148,8 @@ export default {
       const endTime = query.endTime || '2017-03-15'
       const brandId = query.brandId || '0'
       const id = query.id || '0'
-      this.startTime = startTime
-      this.endTime = endTime
+      this.startTime = this.dateLeftFormate = startTime
+      this.endTime = this.dateRightFormate = endTime
       this.brandId = brandId
       this.id = id
       this.setCourierData()
@@ -140,7 +159,6 @@ export default {
       return url
     },
     setCourierData () {
-      console.log('set url', this.getUrl())
       let instance = axios.create({
         timeout: 2000
       })
@@ -150,13 +168,13 @@ export default {
             const data = res.data
             const brands = data.brand
             /* eslint-disable no-undef */
-            this.courierData[send].count = data.send
-            this.courierData[sign].count = data.sign
-            this.courierData[back].count = data.back
+            this.courierData['send'].count = data.send
+            this.courierData['sign'].count = data.sign
+            this.courierData['back'].count = data.back
             this.actions = [{
               name: '全部品牌',
               method: () => {
-                this.changeBrand(0)
+                this.changeBrand(0, '全部品牌')
               }
             }]
             for (let i = 0, len = brands.length; i < len; i++) {
@@ -164,11 +182,15 @@ export default {
               let item = {
                 name: name,
                 method: () => {
-                  this.changeBrand(brands[i].id)
+                  this.changeBrand(brands[i].id, name)
                 }
               }
               this.actions.push(item)
             }
+            Toast({
+              message: '数据获取成功!',
+              position: 'bottom'
+            })
           } else {
             Toast({
               message: '数据获取失败!',
@@ -183,19 +205,31 @@ export default {
           })
         })
     },
-    changeBrand (val) {
-      console.log('val', val)
+    changeBrand (val, name) {
       this.brandId = val
+      this.brand = name
       const that = this
       setTimeout(function () {
         that.setCourierData()
       }, 1500)
     },
+    getTime (val) {
+      let time = new Date(val)
+      let month = time.getMonth() + 1
+      if (month < 10) {
+        month = '0' + month
+      }
+      time = time.getFullYear() + '-' + month + '-' + time.getDate()
+      return time
+    },
+    handleChangeLeft (value) {
+      this.dateLeftFormate = this.getTime(value)
+    },
     handleChange (value) {
-      Toast({
-        message: '已选择 ' + value.toString(),
-        position: 'bottom'
-      })
+      this.dateRightFormate = this.getTime(value)
+      this.startTime = this.dateLeftFormate
+      this.endTime = this.dateRightFormate
+      this.setCourierData()
     },
     changesheetVisible () {
       this.sheetVisible ? this.sheetVisible = false : this.sheetVisible = true
@@ -228,24 +262,23 @@ export default {
       background-position: 1.4rem .8rem;
     }
     &-total {
-      border-top: 1px solid rgb(0, 51, 102);
+      background: #0b557a;
       text-align: center;
       display: block;
       color: rgb(255, 255, 255);
       font-size: 1.5rem;
       padding: .8rem 1rem;
       display: flex;
-      border-bottom: 1px solid #999;
       &-time {
-        color: #666;
+        color: #999;
       }
       .border-both {
         border-left: 1px solid #003366;
         border-right: 1px solid #003366;
       }
       .select-back {
+        color: white;
         text-align: left;
-        color: black;
         background: url('../assets/min_ico_2r.png') no-repeat scroll right center transparent;
         background-size: 10% 40%;
         background-position: 50% 6px;
@@ -253,6 +286,19 @@ export default {
       div {
         flex:1;
         font-size:1.3rem;
+      }
+    }
+
+    &-detail {
+      background: #0b557a;
+      padding: 1rem;
+      img {
+        width: 30%;
+        border-radius: 50%;
+      }
+      p {
+        padding-top: 1.1rem;
+        color: white;
       }
     }
     
@@ -295,11 +341,9 @@ export default {
           flex: 2;
           text-align: right;
           padding-right: 0.6rem;
-          line-height: 1.9rem;
-          font-size: 1.4rem;
-          .sign {
-            color: #0661a2;
-          }
+          line-height: 3.9rem;
+          font-size: 1.6rem;
+          font-weight: 600;
         }
       }
 

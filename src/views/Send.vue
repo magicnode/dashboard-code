@@ -10,8 +10,7 @@ export default {
   name: 'send',
   created () {
     Toast({
-      message: '正在开发',
-      position: 'bottom'
+      message: '正在开发'
     })
     this.$router.push({'path': 'list'})
   },

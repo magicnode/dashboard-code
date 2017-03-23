@@ -4,13 +4,13 @@
         <div v-if="modalVisi" class="income-date">
           <div class="income-date-choose">
             <div style="text-align: right;padding-right:.3rem;" @click="openPicker('pickerLeft')">
-              <input type="text" name="" readonly :value="nowday">
+              <input type="text" name="" readonly :value="format_date_left">
             </div>
             <div>              
               <span>—</span>
             </div>
             <div style="text-align: left;padding-left: .3rem;" @click="openPicker('pickerRight')">
-              <input type="text" name="" readonly :value="nowday">
+              <input type="text" name="" readonly :value="format_date_right">
             </div>
           </div>
           <div class="income-date-cover" style="z-index: 2000;" @click="changeModal">
@@ -18,7 +18,7 @@
         </div>
         <div class="income-total">
           <div class="select-back" @click="changesheetVisible">
-            {{brand}}
+            {{brandname}}
           </div>
           <mt-actionsheet
             :actions="actions"
@@ -32,28 +32,28 @@
             v-model="paysheetVisible">
           </mt-actionsheet>
           <div>
-            共计: {{total}}
+            共计: {{incomeData.total}}
           </div>
         </div>
         <div class="income-time">
-          <span>{{format_date_left}}</span>
+          <span>{{incomeData.startTime}}</span>
           <span>--</span>
-          <span>{{format_date_right}}</span>
+          <span>{{incomeData.endTime}}</span>
         </div>
         <div class="income-express">
-          <div class="income-express-list" v-for="item in incomes" @click="goDetail(incomeinfo[item].name)">
+          <div class="income-express-list" v-for="item in incomes" @click="goDetail(incomeData[item].name)">
               <div class="income-express-list-img">
-                <img :src="incomeinfo[item].imgsrc" alt="">
+                <img :src="incomeData[item].imgsrc" :alt="incomeData[item].name">
               </div>
               <div class="income-express-list-time">
-                <p>{{incomeinfo[item].name}}</p>
+                <p>{{incomeData[item].name}}</p>
               </div>
               <div class="income-express-list-total">
-                + {{incomeinfo[item].total}}
+                + {{incomeData[item].total}}
               </div>          
           </div>
         </div>
-        <mt-datetime-picker ref="pickerLeft" type="date" v-model="dateLeft" @confirm="handleChange">
+        <mt-datetime-picker ref="pickerLeft" type="date" v-model="dateLeft" @confirm="handleChangeLeft">
         </mt-datetime-picker>
         <mt-datetime-picker ref="pickerRight" type="date" v-model="dateRight" @confirm="handleChange">
         </mt-datetime-picker>
@@ -61,100 +61,60 @@
 </template>
 <script>
 import { Toast } from 'mint-ui'
-// import { apiUrl } from '../../config/index'
-import sendpayPng from '../assets/inc_ico_sen.png'
-import promisePng from '../assets/inc_ico_pro.png'
-import proxPng from '../assets/inc_ico_col.png'
-import destinationPng from '../assets/inc_ico_to.png'
-import dispatchPng from '../assets/inc_ico_dis.png'
+import { mapState, mapActions } from 'vuex'
 
 export default {
   name: 'income',
   created () {
-    // get info by useid
-    // const query = this.$route.query
-    // const userId = query.userId || 2367
-    this.$http.get('http://192.168.0.201:8890/StatisticalReports/send?userId=2367&startTime=&endTime=&brandId=0&type=0').then(response => {
-      // success callback
-      console.log('response', response)
-    }, response => {
-
-    })
-
     this.$store.commit('setTitle', '收入统计')
-    let nowdate = new Date()
-    nowdate = nowdate.getFullYear() + '-' + (nowdate.getMonth() + 1) + '-' + nowdate.getDate()
-    this.dateRight = this.dateLeft = nowdate
-    this.nowday = nowdate
-    this.format_date_left = nowdate
-    this.format_date_right = nowdate
+    const that = this
+    this.actions = this.brand.map(function (item) {
+      let arr = {}
+      arr.name = item.brand
+      arr.method = () => {
+        that.changeBrand(item.id, item.brand)
+      }
+      return arr
+    })
+    this.getIncome()
+    this.format_date_left = this.incomeData.startTime
+    this.format_date_right = this.incomeData.endTime
   },
   data () {
     return {
-      total: 1500,
       nowday: null,
       dateLeft: null,
-      format_date_left: null,
       dateRight: null,
+      format_date_left: null,
       format_date_right: null,
       modalVisi: false,
       sheetVisible: false,
       paysheetVisible: false,
-      brand: '全部品牌',
+      brandname: '全部品牌',
       paytype: '支付宝支付',
-      actions: [{
-        name: '全部品牌',
-        method: ''
-      }],
+      actions: [],
       payactions: [{
         name: '支付宝支付',
         method: () => {
-          this.paytype = '支付宝支付'
+          this.changePayType(1, '支付宝支付')
         }
       }, {
         name: '微信支付',
         method: () => {
-          this.paytype = '微信支付'
+          this.changePayType(2, '微信支付')
         }
       }, {
         name: '余额支付',
         method: () => {
-          this.paytype = '余额支付'
+          this.changePayType(3, '余额支付')
         }
       }, {
         name: '现金支付',
         method: () => {
-          this.paytype = '现金支付'
+          this.changePayType(4, '现金支付')
         }
       }],
       incomes: ['sendpay', 'promise', 'proxmoney', 'destinationpay', 'dispatchpay'],
-      incomeinfo: {
-        sendpay: {
-          imgsrc: sendpayPng,
-          name: '寄件费',
-          total: 1000
-        },
-        promise: {
-          imgsrc: promisePng,
-          name: '保价',
-          total: 1000
-        },
-        proxmoney: {
-          imgsrc: proxPng,
-          name: '代收货款',
-          total: 1000
-        },
-        destinationpay: {
-          imgsrc: destinationPng,
-          name: '到付费',
-          total: 1000
-        },
-        dispatchpay: {
-          imgsrc: dispatchPng,
-          name: '派件费',
-          total: 1000
-        }
-      },
       time: {
         year: 2017,
         month: 3,
@@ -162,15 +122,52 @@ export default {
       }
     }
   },
+  computed: {
+    ...mapState(['brand', 'incomeData'])
+  },
   methods: {
+    ...mapActions({
+      getIncome: 'GET_INCOME',
+      setIncomeQuery: 'SET_INCOME_QUERY'
+    }),
     openPicker (picker) {
       this.$refs[picker].open()
     },
+    changeBrand (val, name) {
+      this.brandname = name
+      this.setIncomeQuery({brandId: val})
+      this.getIncome()
+    },
+    changePayType (val, name) {
+      this.paytype = name
+      this.setIncomeQuery({type: val})
+      this.getIncome()
+    },
+    getTime (val) {
+      let time = new Date(val)
+      let month = time.getMonth() + 1
+      if (month < 10) {
+        month = '0' + month
+      }
+      time = time.getFullYear() + '-' + month + '-' + time.getDate()
+      return time
+    },
+    handleChangeLeft (value) {
+      this.format_date_left = this.getTime(value)
+    },
     handleChange (value) {
-      Toast({
-        message: '已选择 ' + value.toString(),
-        position: 'bottom'
-      })
+      this.format_date_right = this.getTime(value)
+      if (new Date(this.format_date_left).getTime() <= new Date(this.format_date_right).getTime()) {
+        this.setIncomeQuery({startTime: this.format_date_left, endTime: this.format_date_right})
+        this.getIncome()
+        Toast({
+          message: '时间已经选择完毕'
+        })
+      } else {
+        Toast({
+          message: '时间选择出错, 截止时间不能大于开始时间'
+        })
+      }
     },
     changesheetVisible () {
       this.sheetVisible ? this.sheetVisible = false : this.sheetVisible = true
@@ -311,5 +308,4 @@ export default {
       }
     }
   }
-
 </style>

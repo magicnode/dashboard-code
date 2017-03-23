@@ -4,13 +4,13 @@
         <div v-if="modalVisi" class="courier-date">
           <div class="courier-date-choose">
             <div style="text-align: right;padding-right:.3rem;" @click="openPicker('pickerLeft')">
-              <input type="text" name="" readonly :value="nowday">
+              <input type="text" name="" readonly :value="dateLeftFormate">
             </div>
             <div>
               <span>—</span>
             </div>
             <div style="text-align: left;padding-left: .3rem;" @click="openPicker('pickerRight')">
-              <input type="text" name="" readonly :value="nowday">
+              <input type="text" name="" readonly :value="dateRightFormate">
             </div>
           </div>
           <div class="courier-date-cover" style="z-index: 2000;" @click="changeModal">
@@ -18,7 +18,7 @@
         </div>
         <div class="courier-total">
           <div class="select-back" @click="changesheetVisible">
-            {{brand}}
+            {{ brand }}
           </div>
           <div class="courier-total-time">
             <span>{{startTime}}</span>
@@ -44,9 +44,23 @@
               </div>          
           </div>
         </div>
-        <mt-datetime-picker ref="pickerLeft" type="date" v-model="dateLeft" @confirm="handleChange">
+        <mt-datetime-picker 
+          ref="pickerLeft"
+          type="date"
+          v-model="dateLeft"
+          year-format="{value} 年"
+          month-format="{value} 月"
+          date-format="{value} 日" 
+          @confirm="handleChangeLeft">
         </mt-datetime-picker>
-        <mt-datetime-picker ref="pickerRight" type="date" v-model="dateRight" @confirm="handleChange">
+        <mt-datetime-picker 
+          ref="pickerRight"
+          type="date"
+          v-model="dateRight"
+          year-format="{value} 年"
+          month-format="{value} 月"
+          date-format="{value} 日"
+          @confirm="handleChange">
         </mt-datetime-picker>
      </div>
 </template>
@@ -66,10 +80,6 @@ export default {
   name: 'courier',
   created () {
     this.$store.commit('setTitle', '快递员')
-    let nowdate = new Date()
-    nowdate = nowdate.getFullYear() + '-' + (nowdate.getMonth() + 1) + '-' + nowdate.getDate()
-    this.dateRight = this.dateLeft = nowdate
-    this.nowday = nowdate
     this.initCourierData()
   },
   data () {
@@ -88,7 +98,7 @@ export default {
       paysheetVisible: false,
       brand: '全部品牌',
       actions: [{
-        name: '全部品牌',
+        name: 0,
         method: () => {
           this.changeBrand(0)
         }
@@ -110,8 +120,8 @@ export default {
       const endTime = query.endTime || '2017-03-15'
       const brandId = query.brandId || '0'
       this.userId = userId
-      this.startTime = startTime
-      this.endTime = endTime
+      this.startTime = this.dateLeftFormate = startTime
+      this.endTime = this.dateRightFormate = endTime
       this.brandId = brandId
       this.setCourierData()
     },
@@ -120,7 +130,6 @@ export default {
       return url
     },
     setCourierData () {
-      console.log('set url', this.getUrl())
       let instance = axios.create({
         timeout: 2000
       })
@@ -139,7 +148,7 @@ export default {
             this.actions = [{
               name: '全部品牌',
               method: () => {
-                this.changeBrand(0)
+                this.changeBrand(0, '全部品牌')
               }
             }]
             for (let i = 0, len = brands.length; i < len; i++) {
@@ -147,11 +156,15 @@ export default {
               let item = {
                 name: name,
                 method: () => {
-                  this.changeBrand(brands[i].id)
+                  this.changeBrand(brands[i].id, name)
                 }
               }
               this.actions.push(item)
             }
+            Toast({
+              message: '数据获取成功!',
+              position: 'bottom'
+            })
           } else {
             Toast({
               message: '数据获取失败!',
@@ -166,19 +179,31 @@ export default {
           })
         })
     },
-    changeBrand (val) {
-      console.log('val', val)
+    changeBrand (val, name) {
       this.brandId = val
+      this.brand = name
       const that = this
       setTimeout(function () {
         that.setCourierData()
       }, 500)
     },
+    handleChangeLeft (value) {
+      this.dateLeftFormate = this.getTime(value)
+    },
     handleChange (value) {
-      Toast({
-        message: '已选择 ' + value.toString(),
-        position: 'bottom'
-      })
+      this.dateRightFormate = this.getTime(value)
+      this.startTime = this.dateLeftFormate
+      this.endTime = this.dateRightFormate
+      this.setCourierData()
+    },
+    getTime (val) {
+      let time = new Date(val)
+      let month = time.getMonth() + 1
+      if (month < 10) {
+        month = '0' + month
+      }
+      time = time.getFullYear() + '-' + month + '-' + time.getDate()
+      return time
     },
     changesheetVisible () {
       this.sheetVisible ? this.sheetVisible = false : this.sheetVisible = true
@@ -214,7 +239,6 @@ export default {
       background-position: 1.4rem .8rem;
     }
     &-total {
-      border-top: 1px solid rgb(0, 51, 102);
       text-align: center;
       display: block;
       color: rgb(255, 255, 255);
