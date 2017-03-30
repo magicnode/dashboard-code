@@ -66,7 +66,7 @@ import { mapState, mapActions } from 'vuex'
 export default {
   name: 'income',
   created () {
-    this.$store.commit('setTitle', '收入统计')
+    this.$store.commit('SET_TITLE', {title: '收入统计'})
     const that = this
     this.actions = this.brand.map(function (item) {
       let arr = {}

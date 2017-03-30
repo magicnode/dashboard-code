@@ -8,7 +8,8 @@
      </div>
 </template>
 <script>
-import { mapActions } from 'vuex'
+import { mapActions, mapState } from 'vuex'
+import { Toast } from 'mint-ui'
 import dispatchPng from '../assets/sta_btn_dis.png'
 import sendPng from '../assets/sta_btn_sen.png'
 import incomePng from '../assets/sta_btn_inc.png'
@@ -17,8 +18,25 @@ import courierPng from '../assets/sta_btn_peo.png'
 export default {
   name: 'list',
   created () {
-    this.$store.commit('setTitle', '统计报表')
-    this.getBrand()
+    this.$store.commit('SET_TITLE', {title: '统计报表'})
+    const query = this.$route.query
+    const userId = query.userId
+    // 2367
+    if (userId === undefined && !this.userId) {
+      Toast({
+        message: '未定义用户id, 无法正常查询数据'
+      })
+      return false
+    } else if (userId) {
+      this.$store.commit('SET_USERID', {userId})
+    }
+    console.log('user', this.userId)
+    this.setBrands()
+  },
+  computed: {
+    ...mapState({
+      userId: modules => modules.user.userId
+    })
   },
   data () {
     return {
@@ -41,7 +59,7 @@ export default {
   },
   methods: {
     ...mapActions({
-      getBrand: 'GET_BRAND'
+      setBrands: 'setBrands'
     }),
     handleChange (val) {
       this.$router.push({path: val})

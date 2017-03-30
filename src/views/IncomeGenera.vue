@@ -42,7 +42,7 @@ export default {
   created () {
     const query = this.$route.query
     const title = query.type || ''
-    this.$store.commit('setTitle', title)
+    this.$store.commit('SET_TITLE', {title})
     this.tabData = this.cash
   },
   data () {

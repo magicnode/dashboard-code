@@ -9,6 +9,7 @@ import VueAwesomeSwiper from 'vue-awesome-swiper'
 import App from './App'
 import router from './router'
 import store from './store'
+import { getBrandType, dateFormate, defaultCourierImg } from './filters'
 
 import Chart from './components/Chart'
 
@@ -23,12 +24,17 @@ Vue.component('dh-chart', {
   template: Chart
 })
 
+Vue.filter('brand', getBrandType)
+Vue.filter('datestr', dateFormate)
+Vue.filter('courierimg', defaultCourierImg)
+
 Vue.axios = axios
 Vue.config.productionTip = false
 
 router.afterEach((to, from) => {
   if (to.path === '/') {
-    return router.push({'path': 'list'})
+    const query = to.query
+    return router.push({'path': 'list', 'query': query})
   }
 })
 

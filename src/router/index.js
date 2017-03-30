@@ -48,10 +48,6 @@ export default new Router({
       component: require('../views/CourierDetail')
     }]
   }, {
-    path: '/date',
-    name: 'Date',
-    component: require('../views/DatePicker')
-  }, {
     path: '/chart',
     name: 'Chart',
     component: require('../components/Chart')

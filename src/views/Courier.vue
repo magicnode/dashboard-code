@@ -4,13 +4,13 @@
         <div v-if="modalVisi" class="courier-date">
           <div class="courier-date-choose">
             <div style="text-align: right;padding-right:.3rem;" @click="openPicker('pickerLeft')">
-              <input type="text" name="" readonly :value="dateLeftFormate">
+              <input type="text" name="" readonly :value="courierquery.startTime | datestr">
             </div>
             <div>
               <span>—</span>
             </div>
             <div style="text-align: left;padding-left: .3rem;" @click="openPicker('pickerRight')">
-              <input type="text" name="" readonly :value="dateRightFormate">
+              <input type="text" name="" readonly :value="courierquery.endTime | datestr">
             </div>
           </div>
           <div class="courier-date-cover" style="z-index: 2000;" @click="changeModal">
@@ -18,22 +18,18 @@
         </div>
         <div class="courier-total">
           <div class="select-back" @click="changesheetVisible">
-            {{ brand }}
+            {{ courierquery.brandId | brand }}
           </div>
           <div class="courier-total-time">
-            <span>{{startTime}}</span>
+            <span>{{courierquery.startTime | datestr}}</span>
             <span>--</span>
-            <span>{{endTime}}</span>
+            <span>{{courierquery.endTime | datestr}}</span>
           </div>
-          <mt-actionsheet
-            :actions="actions"
-            v-model="sheetVisible">
-          </mt-actionsheet>
         </div>
         <div class="courier-express">
-          <div class="courier-express-list" v-for="item in couriers" @click="goDetail(item)">
+          <div class="courier-express-list" v-for="item in courier" @click="goDetail(item)">
               <div class="courier-express-list-img">
-                <img :src="item.img" alt="">
+                <img :src="item.img | courierimg" alt="">
               </div>
               <div class="courier-express-list-time">
                 <p>{{item.name}}</p>
@@ -47,7 +43,7 @@
         <mt-datetime-picker 
           ref="pickerLeft"
           type="date"
-          v-model="dateLeft"
+          v-model="courierquery.startTime"
           year-format="{value} 年"
           month-format="{value} 月"
           date-format="{value} 日" 
@@ -56,154 +52,83 @@
         <mt-datetime-picker 
           ref="pickerRight"
           type="date"
-          v-model="dateRight"
+          v-model="courierquery.endTime"
           year-format="{value} 年"
           month-format="{value} 月"
           date-format="{value} 日"
           @confirm="handleChange">
         </mt-datetime-picker>
+      <mt-actionsheet
+        :actions="actions"
+        v-model="sheetVisible">
+      </mt-actionsheet>
      </div>
+
 </template>
 <script>
-import { Toast, MessageBox } from 'mint-ui'
-import { mapState } from 'vuex'
-import axios from 'axios'
-/* eslint-disable no-unused-vars */
-import courierPng from '../assets/man_btn_peo.png'
-import sendpayPng from '../assets/inc_ico_sen.png'
-import promisePng from '../assets/inc_ico_pro.png'
-import proxPng from '../assets/inc_ico_col.png'
-import destinationPng from '../assets/inc_ico_to.png'
-import dispatchPng from '../assets/inc_ico_dis.png'
+// import { Toast } from 'mint-ui'
+import { mapActions, mapState } from 'vuex'
+import { GetDateStr, GetDateFormate } from 'helpers'
 
 export default {
   name: 'courier',
   created () {
-    this.$store.commit('setTitle', '快递员')
+    this.$store.commit('SET_TITLE', {title: '快递员'})
     this.initCourierData()
+    this.initBrand()
   },
   data () {
     return {
-      courierData: {},
-      couriers: [],
       total: 1500,
-      nowday: null,
-      dateLeft: null,
-      dateRight: null,
-      startTime: null,
-      endTime: null,
-      brandId: 0,
       modalVisi: false,
       sheetVisible: false,
       paysheetVisible: false,
-      brand: '全部品牌',
-      actions: [{
-        name: 0,
-        method: () => {
-          this.changeBrand(0)
-        }
-      }]
+      actions: []
     }
   },
   computed: {
-    ...mapState(['api', 'userId'])
+    ...mapState({
+      userId: modules => modules.user.userId,
+      courier: modules => modules.courier.courier,
+      courierquery: modules => modules.courier.courierquery,
+      brands: state => state.brands
+    })
   },
   methods: {
+    ...mapActions([
+      'setCourierQuery'
+    ]),
     openPicker (picker) {
       this.$refs[picker].open()
     },
     initCourierData () {
-      const query = this.$route.query
-      const userId = query.userId || 2367
-      this.$store.commit('setUserId', userId)
-      const startTime = query.startTime || '2017-01-15'
-      const endTime = query.endTime || '2017-03-15'
-      const brandId = query.brandId || '0'
-      this.userId = userId
-      this.startTime = this.dateLeftFormate = startTime
-      this.endTime = this.dateRightFormate = endTime
-      this.brandId = brandId
-      this.setCourierData()
+      if (this.courier) {
+        return
+      }
+      this.setCourierQuery({startTime: GetDateStr(-30), endTime: GetDateStr(0), brandId: 0})
     },
-    getUrl () {
-      const url = this.api.courier + '?userId=' + this.userId + '&startTime=' + this.startTime + '&endTime=' + this.endTime + '&brandId=' + this.brandId
-      return url
-    },
-    setCourierData () {
-      let instance = axios.create({
-        timeout: 2000
-      })
-      instance.get(this.getUrl())
-        .then((res) => {
-          if (res.status === 200) {
-            const data = res.data
-            this.courierData = data
-            this.couriers = this.courierData.courier
-            const brands = data.brand
-            for (let i = 0, len = this.couriers.length; i < len; i++) {
-              if (!this.couriers[i].img) {
-                this.couriers[i].img = courierPng
-              }
-            }
-            this.actions = [{
-              name: '全部品牌',
-              method: () => {
-                this.changeBrand(0, '全部品牌')
-              }
-            }]
-            for (let i = 0, len = brands.length; i < len; i++) {
-              let name = brands[i].brand
-              let item = {
-                name: name,
-                method: () => {
-                  this.changeBrand(brands[i].id, name)
-                }
-              }
-              this.actions.push(item)
-            }
-            Toast({
-              message: '数据获取成功!',
-              position: 'bottom'
-            })
-          } else {
-            Toast({
-              message: '数据获取失败!',
-              position: 'bottom'
-            })
+    initBrand () {
+      const brands = this.brands
+      this.actions = []
+      for (let i = 0, len = this.brands.length; i < len; i++) {
+        let name = brands[i].brand
+        let item = {
+          name: name,
+          method: () => {
+            this.changeBrand(brands[i].id, name)
           }
-        })
-        .catch(err => {
-          console.error(err)
-          MessageBox.confirm('超时, 点击确认刷新').then(action => {
-            this.setCourierDate()
-          })
-        })
+        }
+        this.actions.push(item)
+      }
     },
-    changeBrand (val, name) {
-      this.brandId = val
-      this.brand = name
-      const that = this
-      setTimeout(function () {
-        that.setCourierData()
-      }, 500)
+    changeBrand (val) {
+      this.setCourierQuery({brandId: val})
     },
     handleChangeLeft (value) {
-      this.dateLeftFormate = this.getTime(value)
+      this.setCourierQuery({startTime: GetDateFormate(value)})
     },
     handleChange (value) {
-      this.dateRightFormate = this.getTime(value)
-      this.startTime = this.dateLeftFormate
-      this.endTime = this.dateRightFormate
-      this.setCourierData()
-    },
-    getTime (val) {
-      let time = new Date(val)
-      let month = time.getMonth() + 1
-      if (month < 10) {
-        month = '0' + month
-      }
-      time = time.getFullYear() + '-' + month + '-' + time.getDate()
-      return time
+      this.setCourierQuery({endTime: GetDateFormate(value)})
     },
     changesheetVisible () {
       this.sheetVisible ? this.sheetVisible = false : this.sheetVisible = true
@@ -215,7 +140,9 @@ export default {
       this.modalVisi ? (this.modalVisi = false) : (this.modalVisi = true)
     },
     goDetail (item) {
-      this.$router.push({'path': 'courier/detail?id=' + item.id + '&img=' + item.img + '&name=' + item.name})
+      let query = {id: item.id, img: item.img, name: item.name}
+      query = Object.assign(query, this.courierquery)
+      this.$router.push({'path': 'courier/detail', query})
     }
   }
 }

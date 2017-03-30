@@ -14,7 +14,7 @@ import { mapState } from 'vuex'
 export default {
   name: 'index',
   created () {
-    this.$store.commit('setTitle', '统计报表')
+    this.$store.commit('SET_TITLE', {title: '统计报表'})
   },
   data () {
     return {

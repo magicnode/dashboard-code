@@ -58,7 +58,7 @@ import donePng from '../assets/sta_ico_pro.png'
 export default {
   name: 'dispatch',
   created () {
-    this.$store.commit('setTitle', '')
+    this.$store.commit('SET_TITLE', {title: ''})
     let nowdate = new Date()
     nowdate = nowdate.getFullYear() + '-' + (nowdate.getMonth() + 1) + '-' + nowdate.getDate()
     this.dateRight = this.dateLeft = nowdate

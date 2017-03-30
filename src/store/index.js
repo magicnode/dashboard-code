@@ -1,7 +1,13 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import axios from 'axios'
-import { apiUrl } from '../../config/index'
+import ApiStore from 'ApiStore'
+import { Toast } from 'mint-ui'
+
+import courier from './modules/courier'
+import dispatch from './modules/dispatch'
+import income from './modules/income'
+import * as user from './modules/user'
 
 import sendpayPng from '../assets/inc_ico_sen.png'
 import promisePng from '../assets/inc_ico_pro.png'
@@ -11,35 +17,21 @@ import dispatchPng from '../assets/inc_ico_dis.png'
 
 Vue.use(Vuex)
 
-const ApiStore = {
-  income: apiUrl + '/StatisticalReports/send',
-  courier: apiUrl + '/StatisticalReports/courier',
-  courierdetail: apiUrl + '/StatisticalReports/courierdetails',
-  brand: apiUrl + '/StatisticalReports/allBrand'
-}
+const userId = user.state.userId
 
 const store = new Vuex.Store({
+  modules: {
+    courier,
+    dispatch,
+    income,
+    user
+  },
   state: {
     title: '统计报表',
-    userId: '2367',
-    api: ApiStore,
-    brand: [{
+    brands: [{
       'brand': '全部品牌',
       'id': 0
-    }, {
-      'brand': '全峰',
-      'id': 6
-    }, {
-      'brand': '快捷',
-      'id': 5
-    }, {
-      'brand': '速尔',
-      'id': 4
-    }, {
-      'brand': '龙邦',
-      'id': 3
     }],
-    courierData: {},
     incomeQuery: {
       userId: '2367',
       startTime: '2017-01-15',
@@ -80,17 +72,58 @@ const store = new Vuex.Store({
       }
     }
   },
-  mutations: {
-    setTitle (state, title) {
-      state.title = title
+  actions: {
+    setBrands ({commit}) {
+      const url = ApiStore.brand + '?userId=' + userId
+      axios.get(url).then(rs => {
+        if (rs.status === 200) {
+          let brands = rs.data
+          brands.unshift({brand: '全部品牌', id: '0'})
+          commit('SET_BRANDS', {brands})
+        }
+      })
     },
-    setUserId (state, id) {
-      state.userId = id
+    SET_INCOME_QUERY (context, object) {
+      context.commit('setIncomeQuery', object)
+    },
+    GET_COURIER_DATA (context, object) {
+      let instance = axios.create({
+        timeout: 2000
+      })
+      const url = ApiStore.courier + '?userId=' + object.userId + '&startTime=' + object.startTime + '&endTime=' + object.endTime + '&brandId=' + object.brandId
+      instance.get(url)
+        .then((res) => {
+          if (res.status === 200) {
+            const courier = res.data
+            console.log('actions courier data', courier)
+            context.commit('getCourierData', courier)
+          } else {
+            Toast({
+              message: '数据获取失败!'
+            })
+          }
+        })
+        .catch(err => {
+          console.error(err)
+        })
+    },
+    GET_INCOME (context, object) {
+      context.commit('getIncomeData', object)
+    },
+    GET_BRAND (context) {
+      context.commit('getBrand')
+    }
+  },
+  getters: {
+    getBrands: state => state.brands
+  },
+  mutations: {
+    SET_TITLE (state, { title }) {
+      state.title = title
     },
     setCourierUrl (state, { userId = '2367', startTime = '2017-01-15', endTime = '2017-03-15', brandId = '0' }) {
       state.api.courier = ApiStore.courier + '?userId=' + userId + '&startTime=' + startTime + '&endTime=' + endTime + '&brandId=' + brandId
     },
-
     setIncomeQuery (state, { userId, startTime, endTime, brandId, type }) {
       let query = state.incomeQuery
       userId = !userId ? query.userId : userId
@@ -100,16 +133,9 @@ const store = new Vuex.Store({
       type = !type ? query.type : type
       state.incomeQuery = {userId, startTime, endTime, brandId, type}
     },
-
-    getCourierData (state, { userId = '2367', startTime = '2017-01-15', endTime = '2017-03-15', brandId = '0' }) {
-      const url = ApiStore.courier + '?userId=' + userId + '&startTime=' + startTime + '&endTime=' + endTime + '&brandId=' + brandId
-      axios.get(url).then((res) => {
-        if (res.status === 200) {
-          state.courierData = res.data
-        }
-      })
+    getCourierData (state, { courier }) {
+      state.courier = courier
     },
-
     getIncomeData (state) {
       const query = state.incomeQuery
       const url = ApiStore.income + '?userId=' + query.userId + '&startTime=' + query.startTime +
@@ -131,42 +157,8 @@ const store = new Vuex.Store({
         }
       })
     },
-
-    getBrand (state) {
-      const url = ApiStore.brand + '?userId=' + state.userId
-      axios.get(url).then((res) => {
-        if (res.status === 200) {
-          state.brand = res.data
-          state.brand.unshift({brand: '全部品牌', id: '0'})
-          // console.log('brand', state.brand)
-        }
-      })
-    }
-  },
-  actions: {
-    SET_TITLE (context) {
-      context.commit('setTitle')
-    },
-
-    SET_INCOME_QUERY (context, object) {
-      context.commit('setIncomeQuery', object)
-    },
-
-    GET_COURIER_DATA (context, object) {
-      context.commit('getCourierData', object)
-    },
-
-    GET_INCOME (context, object) {
-      context.commit('getIncomeData', object)
-    },
-
-    GET_BRAND (context) {
-      context.commit('getBrand')
-    }
-  },
-  getters: {
-    title (state) {
-      return state.title
+    SET_BRANDS (state, {brands}) {
+      state.brands = brands
     }
   }
 })

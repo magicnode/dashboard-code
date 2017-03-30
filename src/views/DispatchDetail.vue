@@ -49,7 +49,7 @@ import yuantongPng from '../assets/yuantong.png'
 export default {
   name: 'dispatchdetail',
   created () {
-    this.$store.commit('setTitle', '详情')
+    this.$store.commit('SET_TITLE', {title: '详情'})
     let nowdate = new Date()
     nowdate = nowdate.getFullYear() + '-' + (nowdate.getMonth() + 1) + '-' + nowdate.getDate()
     this.dateRight = this.dateLeft = nowdate

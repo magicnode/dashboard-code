@@ -1,3 +1,5 @@
+import courierPng from '../assets/man_btn_peo.png'
+
 const DISPATCH_TYPE = {
   'enter': '入库',
   'out': '出库',
@@ -20,4 +22,27 @@ export const getDispatchType = function (type) {
 export const getBrandType = function (val) {
   val = val.toString()
   return BRAND_TYPE[val]
+}
+
+export const defaultCourierImg = function (val) {
+  if (!val || val === '' || val === undefined) {
+    // console.log('val', val)
+    // const img = '../static/imgs/man_btn_peo.png'
+    // console.log('con', img)
+    return courierPng
+  }
+  return val
+}
+
+export const dateFormate = function (date) {
+  // console.log('date', date)
+  // console.log('date', typeof date)
+  // if (typeof date === 'string') {
+  //   return date
+  // }
+  date = new Date(date)
+  const year = date.getFullYear()
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  return year + '-' + month + '-' + day
 }

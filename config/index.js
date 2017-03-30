@@ -1,11 +1,6 @@
 // see http://vuejs-templates.github.io/webpack for documentation.
 var path = require('path')
 
-let apiUrl = 'http://192.168.0.201:8890'
-if (process.env.NODE_ENV === 'development') {
-  apiUrl = 'http://192.168.0.201:8890'
-}
-
 module.exports = {
   build: {
     env: require('./prod.env'),
@@ -39,6 +34,5 @@ module.exports = {
     // In our experience, they generally work as expected,
     // just be aware of this issue when enabling this option.
     cssSourceMap: false
-  },
-  apiUrl: apiUrl
+  }
 }
