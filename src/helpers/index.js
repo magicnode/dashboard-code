@@ -15,8 +15,10 @@ export const GetDateStr = function (AddDayCount) {
   let date = new Date()
   date.setDate(date.getDate() + AddDayCount)
   const y = date.getFullYear()
-  const m = date.getMonth() + 1
-  const d = date.getDate()
+  let m = date.getMonth() + 1
+  m = m > 10 ? m : '0' + m
+  let d = date.getDate()
+  d = d > 10 ? d : '0' + d
   return y + '-' + m + '-' + d
 }
 

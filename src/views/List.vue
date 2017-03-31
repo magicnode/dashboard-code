@@ -8,7 +8,7 @@
      </div>
 </template>
 <script>
-import { mapActions, mapState } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 import { Toast } from 'mint-ui'
 import dispatchPng from '../assets/sta_btn_dis.png'
 import sendPng from '../assets/sta_btn_sen.png'
@@ -28,15 +28,19 @@ export default {
       })
       return false
     } else if (userId) {
-      this.$store.commit('SET_USERID', {userId})
+      console.log('use action')
+      this.setUserId({userId})
     }
     console.log('user', this.userId)
     this.setBrands()
   },
   computed: {
-    ...mapState({
-      userId: modules => modules.user.userId
+    ...mapGetters({
+      userId: 'getUserId'
     })
+    // ...mapState({
+    //   userId: modules => modules.user.userId
+    // })
   },
   data () {
     return {
@@ -59,7 +63,8 @@ export default {
   },
   methods: {
     ...mapActions({
-      setBrands: 'setBrands'
+      setBrands: 'setBrands',
+      setUserId: 'setUserId'
     }),
     handleChange (val) {
       this.$router.push({path: val})

@@ -4,13 +4,13 @@
         <div v-if="modalVisi" class="income-date">
           <div class="income-date-choose">
             <div style="text-align: right;padding-right:.3rem;" @click="openPicker('pickerLeft')">
-              <input type="text" name="" readonly :value="format_date_left">
+              <input type="text" name="" readonly :value="income.query.startTime | datestr">
             </div>
             <div>              
               <span>—</span>
             </div>
             <div style="text-align: left;padding-left: .3rem;" @click="openPicker('pickerRight')">
-              <input type="text" name="" readonly :value="format_date_right">
+              <input type="text" name="" readonly :value="income.query.endTime | datestr">
             </div>
           </div>
           <div class="income-date-cover" style="z-index: 2000;" @click="changeModal">
@@ -18,7 +18,7 @@
         </div>
         <div class="income-total">
           <div class="select-back" @click="changesheetVisible">
-            {{brandname}}
+            {{income.query.brandId | brand}}
           </div>
           <mt-actionsheet
             :actions="actions"
@@ -32,25 +32,25 @@
             v-model="paysheetVisible">
           </mt-actionsheet>
           <div>
-            共计: {{incomeData.total}}
+            共计: {{income.data.total}}
           </div>
         </div>
         <div class="income-time">
-          <span>{{incomeData.startTime}}</span>
+          <span>{{income.query.startTime | datestr}}</span>
           <span>--</span>
-          <span>{{incomeData.endTime}}</span>
+          <span>{{income.query.endTime | datestr}}</span>
         </div>
         <div class="income-express">
-          <div class="income-express-list" v-for="item in incomes" @click="goDetail(incomeData[item].name)">
+          <div class="income-express-list" v-for="item in income.money" @click="goDetail(item.name)">
               <div class="income-express-list-img">
-                <img :src="incomeData[item].imgsrc" :alt="incomeData[item].name">
+                <img :src="item.name | incomeimg" :alt="incomeData[item].name">
               </div>
               <div class="income-express-list-time">
-                <p>{{incomeData[item].name}}</p>
+                <p>{{item.name}}</p>
               </div>
               <div class="income-express-list-total">
-                + {{incomeData[item].total}}
-              </div>          
+                + {{item.total}}
+              </div>      
           </div>
         </div>
         <mt-datetime-picker ref="pickerLeft" type="date" v-model="dateLeft" @confirm="handleChangeLeft">
@@ -60,38 +60,19 @@
      </div>
 </template>
 <script>
-import { Toast } from 'mint-ui'
-import { mapState, mapActions } from 'vuex'
+// import { Toast } from 'mint-ui'
+import { mapState, mapActions, mapGetters } from 'vuex'
 
 export default {
   name: 'income',
   created () {
     this.$store.commit('SET_TITLE', {title: '收入统计'})
-    const that = this
-    this.actions = this.brand.map(function (item) {
-      let arr = {}
-      arr.name = item.brand
-      arr.method = () => {
-        that.changeBrand(item.id, item.brand)
-      }
-      return arr
-    })
-    this.getIncome()
-    this.format_date_left = this.incomeData.startTime
-    this.format_date_right = this.incomeData.endTime
   },
   data () {
     return {
-      nowday: null,
-      dateLeft: null,
-      dateRight: null,
-      format_date_left: null,
-      format_date_right: null,
       modalVisi: false,
       sheetVisible: false,
       paysheetVisible: false,
-      brandname: '全部品牌',
-      paytype: '支付宝支付',
       actions: [],
       payactions: [{
         name: '支付宝支付',
@@ -113,61 +94,31 @@ export default {
         method: () => {
           this.changePayType(4, '现金支付')
         }
-      }],
-      incomes: ['sendpay', 'promise', 'proxmoney', 'destinationpay', 'dispatchpay'],
-      time: {
-        year: 2017,
-        month: 3,
-        date: 10
-      }
+      }]
     }
   },
   computed: {
-    ...mapState(['brand', 'incomeData'])
+    ...mapGetters({
+      'userId': 'getUserId',
+      'brands': 'getBrands'
+    }),
+    ...mapState(['income'])
   },
   methods: {
     ...mapActions({
-      getIncome: 'GET_INCOME',
       setIncomeQuery: 'SET_INCOME_QUERY'
     }),
     openPicker (picker) {
       this.$refs[picker].open()
     },
-    changeBrand (val, name) {
-      this.brandname = name
-      this.setIncomeQuery({brandId: val})
-      this.getIncome()
+    changeBrand (val) {
     },
-    changePayType (val, name) {
-      this.paytype = name
-      this.setIncomeQuery({type: val})
-      this.getIncome()
-    },
-    getTime (val) {
-      let time = new Date(val)
-      let month = time.getMonth() + 1
-      if (month < 10) {
-        month = '0' + month
-      }
-      time = time.getFullYear() + '-' + month + '-' + time.getDate()
-      return time
+    changePayType (val) {
     },
     handleChangeLeft (value) {
-      this.format_date_left = this.getTime(value)
     },
     handleChange (value) {
-      this.format_date_right = this.getTime(value)
-      if (new Date(this.format_date_left).getTime() <= new Date(this.format_date_right).getTime()) {
-        this.setIncomeQuery({startTime: this.format_date_left, endTime: this.format_date_right})
-        this.getIncome()
-        Toast({
-          message: '时间已经选择完毕'
-        })
-      } else {
-        Toast({
-          message: '时间选择出错, 截止时间不能大于开始时间'
-        })
-      }
+
     },
     changesheetVisible () {
       this.sheetVisible ? this.sheetVisible = false : this.sheetVisible = true

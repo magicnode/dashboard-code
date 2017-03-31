@@ -7,6 +7,8 @@ const ApiStore = {
   income: apiUrl + '/StatisticalReports/send',
   courier: apiUrl + '/StatisticalReports/courier',
   courierdetail: apiUrl + '/StatisticalReports/courierdetails',
+  courierexpress: apiUrl + '/StatisticalReports/in2',
+  courierorderdetail: apiUrl + '/StatisticalReports/OrderSndetail',
   brand: apiUrl + '/StatisticalReports/allBrand'
 }
 

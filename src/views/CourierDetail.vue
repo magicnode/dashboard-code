@@ -35,16 +35,41 @@
           <p>{{ name }}</p>
         </div>
         <div class="courier-express">
-          <div class="courier-express-list" v-for="item in courierData">
+          <div class="courier-express-list" @click="openIN2(0)">
               <div class="courier-express-list-img">
-                <img :src="item.img" alt="">
+                <img src="../assets/sta_ico_dis.png" alt="">
               </div>
               <div class="courier-express-list-time">
-                <p>{{item.name}}</p>
+                <p>正在派件</p>
               </div>
               <div class="courier-express-list-total">
-                <p class="sign">{{item.count}}</p>
+                <p v-if="courierdetail[id]" class="sign">{{courierdetail[id].send}}</p>
+                <p v-else class="sign">0</p>
               </div>          
+          </div>
+          <div class="courier-express-list" @click="openIN2(301)">
+              <div class="courier-express-list-img">
+                <img src="../assets/sta_ico_sig.png" alt="">
+              </div>
+              <div class="courier-express-list-time">
+                <p>签收</p>
+              </div>
+              <div class="courier-express-list-total">
+                <p v-if="courierdetail[id]" class="sign">{{courierdetail[id].sign}}</p>
+                <p v-else class="sign">0</p>
+              </div>          
+          </div>
+          <div class="courier-express-list" @click="openIN2(302)">
+              <div class="courier-express-list-img">
+                <img src="../assets/sta_ico_ret.png" alt="">
+              </div>
+              <div class="courier-express-list-time">
+                <p>退回</p>
+              </div>
+              <div class="courier-express-list-total">
+                <p v-if="courierdetail[id]" class="sign">{{courierdetail[id].back}}</p>
+                <p v-else class="sign">0</p>
+              </div>
           </div>
         </div>
         <mt-datetime-picker 
@@ -68,17 +93,14 @@
      </div>
 </template>
 <script>
-import { mapState, mapActions } from 'vuex'
-import { Toast } from 'mint-ui'
+import { mapState, mapActions, mapGetters } from 'vuex'
+import { Toast, Indicator } from 'mint-ui'
 import { GetDateFormate } from 'helpers'
-// import courierPng from '../assets/man_btn_peo.png'
-import sendPng from '../assets/sta_ico_dis.png'
-import signPng from '../assets/sta_ico_sig.png'
-import backPng from '../assets/sta_ico_ret.png'
 
 export default {
   name: 'courierdetail',
   created () {
+    this.$store.commit('SET_TITLE', {title: '快递员'})
     const query = this.$route.query
     if (!query.id) {
       Toast({
@@ -91,13 +113,19 @@ export default {
     this.id = query.id
     this.initCourierDetail()
     this.initBrand()
+    const that = this
+    setTimeout(function () {
+      that.$forceUpdate()
+    }, 1500)
   },
   computed: {
+    ...mapGetters({
+      brands: 'getBrands',
+      userId: 'getUserId'
+    }),
     ...mapState({
-      userId: modules => modules.user.userId,
       courierdetail: modules => modules.courier.courierdetail,
-      courierdetailquery: modules => modules.courier.courierdetailquery,
-      brands: state => state.brands
+      courierdetailquery: modules => modules.courier.courierdetailquery
     })
   },
   data () {
@@ -105,24 +133,6 @@ export default {
       id: '0',
       name: '',
       img: '',
-      courierData: {
-        send: {
-          name: '正在派件',
-          count: 0,
-          img: sendPng
-        },
-        sign: {
-          name: '签收',
-          count: 0,
-          img: signPng
-        },
-        back: {
-          name: '退回',
-          count: 0,
-          img: backPng
-        }
-      },
-      total: 1500,
       modalVisi: false,
       sheetVisible: false,
       paysheetVisible: false,
@@ -139,7 +149,7 @@ export default {
     initBrand () {
       const brands = this.brands
       this.actions = []
-      for (let i = 0, len = this.brands.length; i < len; i++) {
+      for (let i = 0, len = brands.length; i < len; i++) {
         let name = brands[i].brand
         let item = {
           name: name,
@@ -151,16 +161,34 @@ export default {
       }
     },
     changeBrand (val) {
+      Indicator.open()
       this.setCourierDetailQuery({id: this.id, brandId: val})
+          .then(rs => {
+            setTimeout(function () {
+              Indicator.close()
+            }, 1500)
+            this.$nextTick(function () {
+              console.log('dom is change 1')
+            })
+            const that = this
+            setTimeout(function () {
+              that.$forceUpdate()
+            }, 2000)
+          })
+          .catch(err => {
+            console.error(err)
+            Indicator.close()
+          })
     },
     initCourierDetail () {
       const query = this.$route.query
-      console.log('quey', query)
       this.setCourierDetailQuery({id: this.id, startTime: GetDateFormate(query.startTime), endTime: GetDateFormate(query.endTime), brandId: query.brandId})
     },
     handleChangeLeft (value) {
+      this.setCourierDetailQuery({id: this.id, startTime: GetDateFormate(value)})
     },
     handleChange (value) {
+      this.setCourierDetailQuery({id: this.id, endTime: GetDateFormate(value)})
     },
     changesheetVisible () {
       this.sheetVisible ? this.sheetVisible = false : this.sheetVisible = true
@@ -170,6 +198,17 @@ export default {
     },
     changeModal () {
       this.modalVisi ? (this.modalVisi = false) : (this.modalVisi = true)
+    },
+    openIN2 (val) {
+      const query = {
+        id: this.id,
+        userId: this.userId,
+        startTime: GetDateFormate(this.courierdetailquery[this.id].startTime),
+        endTime: GetDateFormate(this.courierdetailquery[this.id].endTime),
+        state: val,
+        brandId: this.courierdetailquery[this.id].brandId
+      }
+      this.$router.push({'path': 'express', query})
     }
   }
 }

@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 import axios from 'axios'
 import ApiStore from 'ApiStore'
 import { Toast } from 'mint-ui'
+import window from 'window'
 
 import courier from './modules/courier'
 import dispatch from './modules/dispatch'
@@ -16,8 +17,6 @@ import destinationPng from '../assets/inc_ico_to.png'
 import dispatchPng from '../assets/inc_ico_dis.png'
 
 Vue.use(Vuex)
-
-const userId = user.state.userId
 
 const store = new Vuex.Store({
   modules: {
@@ -74,11 +73,13 @@ const store = new Vuex.Store({
   },
   actions: {
     setBrands ({commit}) {
-      const url = ApiStore.brand + '?userId=' + userId
+      const url = ApiStore.brand + '?userId=' + window.localStorage.userId
       axios.get(url).then(rs => {
         if (rs.status === 200) {
           let brands = rs.data
           brands.unshift({brand: '全部品牌', id: '0'})
+          window.localStorage.removeItem('brands')
+          window.localStorage.setItem('brands', JSON.stringify(brands))
           commit('SET_BRANDS', {brands})
         }
       })
@@ -95,7 +96,6 @@ const store = new Vuex.Store({
         .then((res) => {
           if (res.status === 200) {
             const courier = res.data
-            console.log('actions courier data', courier)
             context.commit('getCourierData', courier)
           } else {
             Toast({
@@ -115,7 +115,14 @@ const store = new Vuex.Store({
     }
   },
   getters: {
-    getBrands: state => state.brands
+    getBrands: state => {
+      let brands = state.brands
+      if (brands.length < 2) {
+        const local = window.localStorage.getItem('brands')
+        brands = JSON.parse(local)
+      }
+      return brands
+    }
   },
   mutations: {
     SET_TITLE (state, { title }) {

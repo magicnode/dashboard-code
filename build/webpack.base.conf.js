@@ -28,6 +28,11 @@ module.exports = {
       'ApiStore': resolve('src/api/url')
     }
   },
+  externals: [
+    {
+      "window": "window"
+    }
+  ],
   module: {
     rules: [
       {

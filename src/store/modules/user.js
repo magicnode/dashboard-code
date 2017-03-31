@@ -1,15 +1,24 @@
 import * as types from '../mutation-types'
+import window from 'window'
 
 export const state = {
-  userId: '2367'
+  userId: null
 }
 
 export const getters = {
-  getUserId: state => state.userId
+  getUserId: state => {
+    let userId = state.userId
+    if (!userId) {
+      userId = window.localStorage.userId ? window.localStorage.userId : null
+    }
+    return userId
+  }
 }
 
 export const actions = {
   setUserId ({ commit }, { userId }) {
+    window.localStorage.removeItem('userId')
+    window.localStorage.setItem('userId', userId)
     commit(types.SET_USERID, { userId })
   }
 }
@@ -19,4 +28,3 @@ export const mutations = {
     state.userId = userId
   }
 }
-
