@@ -9,7 +9,7 @@ import VueAwesomeSwiper from 'vue-awesome-swiper'
 import App from './App'
 import router from './router'
 import store from './store'
-import {getBrandType, dateFormate, defaultCourierImg, handleNull, expresstype, expressoperation, expressstate, failImg} from './filters'
+import {getBrandType, dateFormate, defaultCourierImg, handleNull, expresstype, expressoperation, expressstate, failImg, feetype, getBrandImg} from './filters'
 
 import Chart from './components/Chart'
 
@@ -25,6 +25,7 @@ Vue.component('dh-chart', {
 })
 
 Vue.filter('brand', getBrandType)
+Vue.filter('brandimg', getBrandImg)
 Vue.filter('datestr', dateFormate)
 Vue.filter('courierimg', defaultCourierImg)
 Vue.filter('handlenull', handleNull)
@@ -32,6 +33,7 @@ Vue.filter('expresstype', expresstype)
 Vue.filter('expressoperation', expressoperation)
 Vue.filter('expressstate', expressstate)
 Vue.filter('failimg', failImg)
+Vue.filter('feetype', feetype)
 
 Vue.axios = axios
 Vue.config.productionTip = false

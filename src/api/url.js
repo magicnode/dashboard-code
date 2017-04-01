@@ -5,6 +5,8 @@ if (process.env.NODE_ENV === 'development') {
 
 const ApiStore = {
   income: apiUrl + '/StatisticalReports/send',
+  incomegenera: apiUrl + '/StatisticalReports/sendType',
+  incomedetail: apiUrl + '/StatisticalReports/SendDtails',
   courier: apiUrl + '/StatisticalReports/courier',
   courierdetail: apiUrl + '/StatisticalReports/courierdetails',
   courierexpress: apiUrl + '/StatisticalReports/in2',

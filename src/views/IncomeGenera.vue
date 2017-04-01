@@ -5,100 +5,93 @@
         </div>
         <div class="income-tab">
           <div class="income-tab-switch">
-            <div @click="tabSwitch('cash')">
+            <div @click="tabSwitch('money')">
               <span v-bind:class="{ 'tab-active': CisActive}">现金支付</span>
             </div>
-            <div @click="tabSwitch('online')">
+            <div @click="tabSwitch('paynet')">
                 <span v-bind:class="{ 'tab-active': OisActive}">网上支付</span>
             </div>
           </div>
-          <div v-for="item in tabData" @click="linkPayDetail(item)" class="income-tab-content">
+          <div v-for="item in tabData" @click="linkPayDetail(item.order_id)" class="income-tab-content">
             <div class="income-tab-content__intro" >
-              <span>{{item.date}}</span><span class="minute">{{item.minute}}</span>
-              <span class="type">{{item.type}}</span>
+              <span>{{item.pay_time | datetimestamp}}</span>
+              <span class="type">{{item.expressType | expresstype}}</span>
             </div>
             <div class="income-tab-content__detail">
               <div class="img">
-                <img :src="item.img" alt="">
+                <img :src="item.brandId | brandimg" alt="">
               </div>
               <div class="order-id">
                 <p>{{item.order_id}}</p>
                 <p>{{item.phonenum}} <span class="weight">{{'重量:' + item.weight + 'kg'}}</span></p>
               </div>
               <div class="pay">
-                {{'+ ' + item.pay}}
+                {{'+ ' + item.fee  }}
               </div>
             </div>
           </div >
+
         </div>
      </div>
 </template>
 <script>
-// import { Toast } from 'mint-ui'
-import shunfengPng from '../assets/shunfeng.png'
+import { Toast } from 'mint-ui'
+import {feedtype} from 'helpers'
+import ApiStore from 'ApiStore'
+import {dateFormateStamp as datetimestamp, getExpresstype as expresstype} from '../filters'
+import axios from 'axios'
 
 export default {
   name: 'incomegenera',
   created () {
     const query = this.$route.query
-    const title = query.type || ''
+    let title = query.feetype || ''
+    title = feedtype(title)
     this.$store.commit('SET_TITLE', {title})
-    this.tabData = this.cash
+    axios.get(ApiStore.incomegenera, {
+      params: query
+    })
+    .then(rs => {
+      // console.log('rs', rs.data)
+      if (rs.status === 200) {
+        const data = rs.data
+        this.paynet = data.paynet
+        this.money = data.money
+        this.tabData = this.money
+        for (let i = 0, len = this.money.length; i < len; i++) {
+          this.total += Number(this.money[i].fee)
+        }
+        for (let i = 0, len = this.paynet.length; i < len; i++) {
+          this.total += Number(this.paynet[i].fee)
+        }
+        return
+      }
+      Toast({
+        message: '数据加载失败'
+      })
+    })
+    .catch(err => {
+      console.error(err)
+    })
   },
   data () {
     return {
-      total: 1500,
+      total: 0,
       tab: 'cash',
       CisActive: true,
       OisActive: false,
-      tabData: [],
-      cash: [{
-        brand: '申通',
-        img: shunfengPng,
-        type: '普通件',
-        pay: '5.00',
-        phonenum: '130025212552',
-        order_id: '154578524654564564',
-        weight: '4',
-        date: '2016-09-20',
-        minute: '14:32'
-      }, {
-        brand: '顺丰',
-        type: '普通件',
-        img: shunfengPng,
-        pay: '5.00',
-        phonenum: '130025212552',
-        order_id: '15457852',
-        weight: '100',
-        date: '2016-10-20',
-        minute: '14:01'
-      }],
-      online: [{
-        brand: '顺丰',
-        img: shunfengPng,
-        type: '普通件',
-        pay: '15.00',
-        phonenum: '130025212552',
-        order_id: '15457852',
-        weight: '10',
-        date: '2016-09-20',
-        minute: '14:32'
-      }, {
-        brand: '申通',
-        type: '普通件',
-        img: shunfengPng,
-        pay: '55.00',
-        phonenum: '130025212552',
-        order_id: '15457852',
-        weight: '400',
-        date: '2016-09-20',
-        minute: '14:32'
-      }]
+      paynet: [],
+      money: [],
+      tabData: []
     }
+  },
+  filters: {
+    datetimestamp,
+    expresstype
   },
   methods: {
     tabSwitch (val) {
-      if (val === 'cash') {
+      if (val === 'money') {
         this.CisActive = true
         this.OisActive = false
       } else {
@@ -107,8 +100,11 @@ export default {
       }
       this.tabData = this[val]
     },
-    linkPayDetail (item) {
-      this.$router.push({'path': 'detail'})
+    linkPayDetail (orderId) {
+      const query = {
+        orderId: orderId
+      }
+      this.$router.push({'path': 'detail', query})
     }
   }
 }

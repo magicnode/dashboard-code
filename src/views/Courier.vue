@@ -1,6 +1,6 @@
 <template>
      <div class="courier">
-        <div class="courier-changedate" @click="changeModal"></div>
+        <div class="courier-changedate" @click="modalVisi = !modalVisi"></div>
         <div v-if="modalVisi" class="courier-date">
           <div class="courier-date-choose">
             <div style="text-align: right;padding-right:.3rem;" @click="openPicker('pickerLeft')">
@@ -13,11 +13,11 @@
               <input type="text" name="" readonly :value="courierquery.endTime | datestr">
             </div>
           </div>
-          <div class="courier-date-cover" style="z-index: 2000;" @click="changeModal">
+          <div class="courier-date-cover" style="z-index: 2000;" @click="modalVisi = !modalVisi">
           </div>
         </div>
         <div class="courier-total">
-          <div class="select-back" @click="changesheetVisible">
+          <div class="select-back" @click="sheetVisible = !sheetVisible">
             {{ courierquery.brandId | brand }}
           </div>
           <div class="courier-total-time">
@@ -133,15 +133,6 @@ export default {
     },
     handleChange (value) {
       this.setCourierQuery({endTime: GetDateFormate(value)})
-    },
-    changesheetVisible () {
-      this.sheetVisible ? this.sheetVisible = false : this.sheetVisible = true
-    },
-    changepaysheetVisible () {
-      this.paysheetVisible ? this.paysheetVisible = false : this.paysheetVisible = true
-    },
-    changeModal () {
-      this.modalVisi ? (this.modalVisi = false) : (this.modalVisi = true)
     },
     goDetail (item) {
       let query = {id: item.id, img: item.img, name: item.name}

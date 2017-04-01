@@ -1,6 +1,12 @@
 import courierPng from '../assets/man_btn_peo.png'
 import failPng from '../assets/404.jpg'
 
+import senPng from '../assets/inc_ico_sen.png'
+import proPng from '../assets/inc_ico_pro.png'
+import colPng from '../assets/inc_ico_col.png'
+import toPng from '../assets/inc_ico_to.png'
+import disPng from '../assets/inc_ico_dis.png'
+
 const DISPATCH_TYPE = {
   'enter': '入库',
   'out': '出库',
@@ -16,13 +22,28 @@ const BRAND_TYPE = {
   '6': '全峰'
 }
 
+const BRAND_IMG = {
+  '0': '全部品牌',
+  '3': '../static/imgs/expresslogo/longbang.png',
+  '4': '../static/imgs/expresslogo/suer.png',
+  '5': '../static/imgs/expresslogo/kuaijie.png',
+  '6': '../static/imgs/expresslogo/quanfeng.png'
+}
+
 export const getDispatchType = function (type) {
   return DISPATCH_TYPE[type]
 }
 
 export const getBrandType = function (val) {
+  if (!val) {
+    return BRAND_TYPE['0']
+  }
   val = val.toString()
   return BRAND_TYPE[val]
+}
+
+export const getBrandImg = function (val) {
+  return BRAND_IMG[val]
 }
 
 export const defaultCourierImg = function (val) {
@@ -50,6 +71,22 @@ export const dateFormate = function (date) {
   let day = date.getDate()
   day = day > 10 ? day : '0' + day
   return year + '-' + month + '-' + day
+}
+
+export const dateFormateStamp = function (timpstamp) {
+  if (!timpstamp) {
+    return ''
+  }
+  let date = new Date(Number(timpstamp))
+  const year = date.getFullYear()
+  let month = date.getMonth() + 1
+  month = month > 10 ? month : '0' + month
+  let day = date.getDate()
+  day = day > 10 ? day : '0' + day
+  let h = date.getHours() + ':'
+  let m = date.getMinutes() + ':'
+  let s = date.getSeconds()
+  return year + '-' + month + '-' + day + ' ' + h + m + s
 }
 
 export const handleNull = function (val) {
@@ -97,3 +134,41 @@ export const expressstate = function (val) {
   return states[val]
 }
 
+export const getIncomeImg = function (feetype) {
+  const imgs = {
+    '1': senPng,
+    '2': proPng,
+    '3': colPng,
+    '4': toPng,
+    '5': disPng
+  }
+  return imgs[feetype]
+}
+
+export const feetype = function (val) {
+  const feetypes = {
+    '1': '寄件费',
+    '2': '代收货款',
+    '3': '到付件',
+    '4': '派件费',
+    '5': '保价费'
+  }
+  return feetypes[val]
+}
+
+export const paytype = function (val) {
+  const paytypes = {
+    '1': '支付宝支付',
+    '2': '微信支付',
+    '3': '余额支付',
+    '4': '现金支付'
+  }
+  return paytypes[val]
+}
+
+export const getExpresstype = function (val) {
+  const expresstypes = {
+    '1': '普通件'
+  }
+  return expresstypes[val]
+}

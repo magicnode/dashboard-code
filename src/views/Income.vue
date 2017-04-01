@@ -1,6 +1,6 @@
 <template>
      <div class="income">
-        <div class="income-changedate" @click="changeModal"></div>
+        <div class="income-changedate" @click="modalVisi = !modalVisi"></div>
         <div v-if="modalVisi" class="income-date">
           <div class="income-date-choose">
             <div style="text-align: right;padding-right:.3rem;" @click="openPicker('pickerLeft')">
@@ -13,26 +13,26 @@
               <input type="text" name="" readonly :value="income.query.endTime | datestr">
             </div>
           </div>
-          <div class="income-date-cover" style="z-index: 2000;" @click="changeModal">
+          <div class="income-date-cover" style="z-index: 2000;" @click="modalVisi = !modalVisi">
           </div>
         </div>
         <div class="income-total">
-          <div class="select-back" @click="changesheetVisible">
+          <div class="select-back" @click="sheetVisible = !sheetVisible">
             {{income.query.brandId | brand}}
           </div>
           <mt-actionsheet
             :actions="actions"
             v-model="sheetVisible">
           </mt-actionsheet>
-          <div class="border-both select-back" @click="changepaysheetVisible">
-               {{paytype}}
+          <div class="border-both select-back" @click="paysheetVisible = !paysheetVisible">
+               {{income.query.type | paytype}}
           </div>
           <mt-actionsheet
             :actions="payactions"
             v-model="paysheetVisible">
           </mt-actionsheet>
           <div>
-            共计: {{income.data.total}}
+            共计: {{ incomedata.total | handlenull }}
           </div>
         </div>
         <div class="income-time">
@@ -41,32 +41,37 @@
           <span>{{income.query.endTime | datestr}}</span>
         </div>
         <div class="income-express">
-          <div class="income-express-list" v-for="item in income.money" @click="goDetail(item.name)">
+          <div class="income-express-list" v-for="item in incomedata.detail" @click="goDetail(item.feetype)">
               <div class="income-express-list-img">
-                <img :src="item.name | incomeimg" :alt="incomeData[item].name">
+                <img :src="item.feetype | incomeimg">
               </div>
               <div class="income-express-list-time">
-                <p>{{item.name}}</p>
+                <p>{{item.feetype | feetype}}</p>
+                <span>{{income.query.startTime | datestr}}-{{income.query.endTime | datestr}}</span>
               </div>
               <div class="income-express-list-total">
-                + {{item.total}}
+                + {{item.money}}
               </div>      
           </div>
         </div>
-        <mt-datetime-picker ref="pickerLeft" type="date" v-model="dateLeft" @confirm="handleChangeLeft">
+        <mt-datetime-picker ref="pickerLeft" type="date" v-model="income.query.startTime" @confirm="handleChangeLeft">
         </mt-datetime-picker>
-        <mt-datetime-picker ref="pickerRight" type="date" v-model="dateRight" @confirm="handleChange">
+        <mt-datetime-picker ref="pickerRight" type="date" v-model="income.query.endTime" @confirm="handleChange">
         </mt-datetime-picker>
      </div>
 </template>
 <script>
 // import { Toast } from 'mint-ui'
 import { mapState, mapActions, mapGetters } from 'vuex'
+import { getIncomeImg as incomeimg, paytype } from '../filters'
+import { GetDateStr, GetDateFormate } from 'helpers'
 
 export default {
   name: 'income',
   created () {
     this.$store.commit('SET_TITLE', {title: '收入统计'})
+    this.initIncome()
+    this.initBrand()
   },
   data () {
     return {
@@ -74,63 +79,94 @@ export default {
       sheetVisible: false,
       paysheetVisible: false,
       actions: [],
+      paytype: 1,
       payactions: [{
         name: '支付宝支付',
         method: () => {
-          this.changePayType(1, '支付宝支付')
+          this.changePayType(1)
         }
       }, {
         name: '微信支付',
         method: () => {
-          this.changePayType(2, '微信支付')
+          this.changePayType(2)
         }
       }, {
         name: '余额支付',
         method: () => {
-          this.changePayType(3, '余额支付')
+          this.changePayType(3)
         }
       }, {
         name: '现金支付',
         method: () => {
-          this.changePayType(4, '现金支付')
+          this.changePayType(4)
         }
       }]
     }
   },
+  filters: {
+    incomeimg,
+    paytype
+  },
   computed: {
     ...mapGetters({
       'userId': 'getUserId',
-      'brands': 'getBrands'
+      'brands': 'getBrands',
+      'incomedata': 'getIncomeData'
     }),
-    ...mapState(['income'])
+    ...mapState({
+      'income': modules => modules.income.income
+    })
   },
   methods: {
-    ...mapActions({
-      setIncomeQuery: 'SET_INCOME_QUERY'
-    }),
+    ...mapActions([
+      'setIncomeQuery'
+    ]),
+    initIncome () {
+      if (this.incomedata.refresh) {
+        return
+      }
+      const startTime = GetDateStr(-30)
+      const endTime = GetDateStr(0)
+      this.setIncomeQuery({startTime, endTime, brandId: 0, type: 1})
+    },
+    initBrand () {
+      const brands = this.brands
+      this.actions = []
+      for (let i = 0, len = this.brands.length; i < len; i++) {
+        let name = brands[i].brand
+        let item = {
+          name: name,
+          method: () => {
+            this.changeBrand(brands[i].id, name)
+          }
+        }
+        this.actions.push(item)
+      }
+    },
     openPicker (picker) {
       this.$refs[picker].open()
     },
     changeBrand (val) {
+      this.setIncomeQuery({brandId: val})
     },
     changePayType (val) {
+      this.setIncomeQuery({type: val})
     },
-    handleChangeLeft (value) {
+    handleChangeLeft (val) {
+      this.setIncomeQuery({startTime: val})
     },
-    handleChange (value) {
-
+    handleChange (val) {
+      this.setIncomeQuery({endTime: val})
     },
-    changesheetVisible () {
-      this.sheetVisible ? this.sheetVisible = false : this.sheetVisible = true
-    },
-    changepaysheetVisible () {
-      this.paysheetVisible ? this.paysheetVisible = false : this.paysheetVisible = true
-    },
-    changeModal () {
-      this.modalVisi ? (this.modalVisi = false) : (this.modalVisi = true)
-    },
-    goDetail (name) {
-      this.$router.push({'path': 'income/genera?type=' + name})
+    goDetail (val) {
+      const query = {
+        feetype: val,
+        userId: this.userId,
+        brandId: this.income.query.brandId,
+        startTime: GetDateFormate(this.income.query.startTime),
+        endTime: GetDateFormate(this.income.query.endTime)
+      }
+      this.$router.push({'path': 'income/genera', query})
     }
   }
 }
@@ -186,7 +222,8 @@ export default {
     
     &-express {
       &-list {
-        .flex;      
+        .flex;   
+        align-items: center;   
         padding: .3rem .4rem;
         border-bottom: 1px solid #f1f1f1;
         &-img {
@@ -200,7 +237,7 @@ export default {
         &-time {
           text-align: left;
           flex: 3;
-          line-height: 3rem;
+          line-height: 2rem;
           padding: .4rem .3rem;
           p {
             font-size: 1.4rem;

@@ -32,3 +32,14 @@ export const GetDateFormate = function (date) {
   return y + '-' + m + '-' + d
 }
 
+export const feedtype = function (val) {
+  const feedtypes = {
+    '1': '寄件费',
+    '2': '代收货款',
+    '3': '到付件',
+    '4': '派件费',
+    '5': '保价费'
+  }
+  return feedtypes[val]
+}
+

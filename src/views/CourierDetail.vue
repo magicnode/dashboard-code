@@ -168,7 +168,6 @@ export default {
               Indicator.close()
             }, 1500)
             this.$nextTick(function () {
-              console.log('dom is change 1')
             })
             const that = this
             setTimeout(function () {
