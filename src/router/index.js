@@ -54,6 +54,10 @@ export default new Router({
       path: '/courier/orderdetail',
       name: 'OrderDetail',
       component: require('../views/OrderDetail')
+    }, {
+      path: '/export',
+      name: 'Export',
+      component: require('../views/Export')
     }]
   }, {
     path: '/chart',

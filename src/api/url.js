@@ -11,7 +11,10 @@ const ApiStore = {
   courierdetail: apiUrl + '/StatisticalReports/courierdetails',
   courierexpress: apiUrl + '/StatisticalReports/in2',
   courierorderdetail: apiUrl + '/StatisticalReports/OrderSndetail',
-  brand: apiUrl + '/StatisticalReports/allBrand'
+  brand: apiUrl + '/StatisticalReports/allBrand',
+  dispatch: apiUrl + '/StatisticalReports/delivery',
+  dispatchDetail: apiUrl + '/StatisticalReports/CourierDetails',
+  export: apiUrl + '/StatisticalReports/Email'
 }
 
 export default ApiStore

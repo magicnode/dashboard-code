@@ -81,6 +81,11 @@ export default {
       actions: [],
       paytype: 1,
       payactions: [{
+        name: '全部支付',
+        method: () => {
+          this.changePayType(0)
+        }
+      }, {
         name: '支付宝支付',
         method: () => {
           this.changePayType(1)
@@ -127,7 +132,7 @@ export default {
       }
       const startTime = GetDateStr(-30)
       const endTime = GetDateStr(0)
-      this.setIncomeQuery({startTime, endTime, brandId: 0, type: 1})
+      this.setIncomeQuery({startTime, endTime, brandId: 0, type: 0})
     },
     initBrand () {
       const brands = this.brands
@@ -137,7 +142,7 @@ export default {
         let item = {
           name: name,
           method: () => {
-            this.changeBrand(brands[i].id, name)
+            this.changeBrand(brands[i].id)
           }
         }
         this.actions.push(item)

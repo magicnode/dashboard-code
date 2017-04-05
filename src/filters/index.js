@@ -8,10 +8,20 @@ import toPng from '../assets/inc_ico_to.png'
 import disPng from '../assets/inc_ico_dis.png'
 
 const DISPATCH_TYPE = {
-  'enter': '入库',
-  'out': '出库',
-  'in': '在库',
-  'question': '问题件'
+  // 入库
+  'Arrive': '到件',
+  'Invite': '自提件',
+  'Send': '分派件',
+  // 出库
+  'Received': '签收',
+  'Back': '退回',
+  // 在库
+  'InSend': '分派件',
+  'InArrive': '到件',
+  'InInvite': '自提件',
+  // 问题件
+  'Questioned': '已解决',
+  'Questioning': '未解决'
 }
 
 const BRAND_TYPE = {
@@ -158,6 +168,7 @@ export const feetype = function (val) {
 
 export const paytype = function (val) {
   const paytypes = {
+    '0': '全部支付',
     '1': '支付宝支付',
     '2': '微信支付',
     '3': '余额支付',

@@ -21,8 +21,8 @@ Vue.use(Vuex)
 const store = new Vuex.Store({
   modules: {
     courier,
-    dispatch,
     income,
+    dispatch,
     user
   },
   state: {
