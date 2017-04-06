@@ -6,7 +6,7 @@
            <input type="text" name="邮箱" value="" v-model="email">
          </div>
          <div>
-           <mt-button type="default" @click="goExport">确定</mt-button>
+           <mt-button plain type="default" @click="goExport">确定</mt-button>
          </div>
        </div>
      </div>
@@ -14,6 +14,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { Toast } from 'mint-ui'
+import { GetDateFormate } from 'helpers'
 import axios from 'axios'
 import ApiStore from 'ApiStore'
 // import window from 'window'
@@ -25,7 +26,8 @@ export default {
   },
   computed: {
     ...mapGetters({
-      'userId': 'getUserId'
+      'userId': 'getUserId',
+      'query': 'getDispatchQuery'
     })
   },
   data () {
@@ -35,23 +37,43 @@ export default {
   },
   methods: {
     goExport () {
-      let url = ApiStore.export + '?userId=' + this.userId + '&email=' + this.email
+      function isEmail (str) {
+        const reg = /^(\w)+(\.\w+)*@(\w)+((\.\w+)+)$/
+        return reg.test(str)
+      }
+      const email = this.email
+      if (!email) {
+        Toast({
+          message: 'email不能为空'
+        })
+        return
+      }
+      if (!isEmail(email)) {
+        Toast({
+          message: 'email格式不对, 请检查'
+        })
+        return
+      }
+      let month = this.query.month
+      month = GetDateFormate(month)
+      let url = ApiStore.export + '?userId=' + this.userId + '&email=' + this.email + '&month=' + month
+      console.log('url', url)
       axios.post(url)
         .then(rs => {
           if (rs.status === 200) {
             Toast({
-              message: '成功'
+              message: '发送成功, 请查看邮箱'
             })
             return
           }
           Toast({
-            message: '失败'
+            message: '发送失败'
           })
         })
         .catch(err => {
           console.error(err)
           Toast({
-            message: '失败'
+            message: '发送失败, 请重试'
           })
         })
     }
@@ -66,6 +88,7 @@ export default {
     font-size: 1.8rem;
   }
   &-box {
+    padding-top: 1rem;
     display: flex;
     align-items: center;
     div {
@@ -74,8 +97,14 @@ export default {
       &:first-child {
         flex: 3;
         input {
+          font-size: 1.2rem;
+          border: 1px solid #999;
           padding: 1rem;
+          width: 60%;
         }
+      }
+      button {
+        width: 100%;
       }
     }
   }

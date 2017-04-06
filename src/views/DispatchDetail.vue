@@ -4,32 +4,30 @@
         <div v-if="modalVisi" class="dispatch-date">
           <div class="dispatch-date-choose">
             <div style="text-align: right;padding-right:.3rem;" @click="openPicker('pickerLeft')">
-              <input type="text" name="" readonly :value="nowday">
+              <input type="text" name="" readonly :value="dateLeft | datestr">
             </div>
             <div>              
               <span>—</span>
             </div>
             <div style="text-align: left;padding-left: .3rem;" @click="openPicker('pickerRight')">
-              <input type="text" name="" readonly :value="nowday">
+              <input type="text" name="" readonly :value="dateRight | datestr">
             </div>
           </div>
-          <div class="dispatch-date-cover" style="z-index: 2000;">
+          <div class="dispatch-date-cover" style="z-index: 2000;" @click="modalVisi = !modalVisi">
           </div>
         </div>
-        <div class="dispatch-total">
-          总计: {{total}}
-        </div>
         <div class="dispatch-express">
-          <div class="dispatch-express-list" v-for="item in expressname">
+          <h1 v-if="expressinfo.length === 0" style="padding-top: 1rem;font-size:1.6rem;">数据为空</h1>
+          <div class="dispatch-express-list" v-for="item in expressinfo" @click.stop="goOrderDetail(item)">
               <div class="dispatch-express-list-img">
-                <img :src="expressinfo[item].imgsrc" alt="">
+                <img :src="item.brandId | brandimg" alt="">
               </div>
               <div class="dispatch-express-list-time">
-                <p>{{expressinfo[item].name}}</p>
-                <span>{{expressinfo[item].time}}</span>
+                <p>{{item.order_sn}}</p>
+                <span>{{item.create_time}}</span>
               </div>
               <div class="dispatch-express-list-total">
-                {{expressinfo[item].total}}
+                {{item.state | expressoperation}}
               </div>          
           </div>
         </div>
@@ -41,10 +39,11 @@
 </template>
 <script>
 import { Toast } from 'mint-ui'
-
-import shentongPng from '../assets/shentong.png'
-import shunfengPng from '../assets/shunfeng.png'
-import yuantongPng from '../assets/yuantong.png'
+import { mapGetters } from 'vuex'
+import axios from 'axios'
+import ApiStore from 'ApiStore'
+import { GetDateStr, GetDateFormate } from 'helpers'
+import window from 'window'
 
 export default {
   name: 'dispatchdetail',
@@ -52,8 +51,23 @@ export default {
     this.$store.commit('SET_TITLE', {title: '详情'})
     let nowdate = new Date()
     nowdate = nowdate.getFullYear() + '-' + (nowdate.getMonth() + 1) + '-' + nowdate.getDate()
-    this.dateRight = this.dateLeft = nowdate
     this.nowday = nowdate
+    this.dateLeft = window.localStorage.getItem('dispatchDetailDateLeft') || nowdate
+    this.dateRight = window.localStorage.getItem('dispatchDetailDateRight') || nowdate
+    const query = this.$route.query
+    const params = {
+      state: query.state || 0,
+      time: query.time || GetDateStr(0),
+      brandId: query.brandId || 0,
+      startTime: '',
+      endTime: ''
+    }
+    this.getDetail(params)
+  },
+  computed: {
+    ...mapGetters({
+      userId: 'getUserId'
+    })
   },
   data () {
     return {
@@ -62,27 +76,9 @@ export default {
       dateLeft: null,
       dateRight: null,
       modalVisi: false,
-      expressname: ['shentong', 'shunfeng', 'yuantong'],
-      expressinfo: {
-        shentong: {
-          imgsrc: shentongPng,
-          name: '申通快递',
-          time: '2017-3-11',
-          total: 1000
-        },
-        shunfeng: {
-          imgsrc: shunfengPng,
-          name: '顺风快递',
-          time: '2017-3-11',
-          total: 1000
-        },
-        yuantong: {
-          imgsrc: yuantongPng,
-          name: '圆通快递',
-          time: '2017-3-11',
-          total: 1000
-        }
-      },
+      state: 0,
+      brandId: 0,
+      expressinfo: [],
       time: {
         year: 2017,
         month: 3,
@@ -95,13 +91,44 @@ export default {
       this.$refs[picker].open()
     },
     handleChange (value) {
-      Toast({
-        message: '已选择 ' + value.toString(),
-        position: 'bottom'
-      })
+      const params = {
+        state: this.state,
+        time: '',
+        brandId: this.brandId || 0,
+        startTime: GetDateFormate(this.dateLeft),
+        endTime: GetDateFormate(this.dateRight)
+      }
+      this.getDetail(params)
     },
     changeModal () {
       this.modalVisi ? (this.modalVisi = false) : (this.modalVisi = true)
+    },
+    getDetail (params) {
+      params.userId = this.userId
+      axios.get(ApiStore.dispatchDetail, {
+        params
+      }).then(rs => {
+        console.log('rs', rs)
+        if (rs.status === 200) {
+          this.expressinfo = rs.data
+        } else {
+          Toast({
+            message: '获取失败'
+          })
+        }
+      })
+    },
+    goOrderDetail (item) {
+      const query = {
+        brandId: item.brandId,
+        userId: this.userId,
+        orderSn: item.order_sn,
+        code: item.code,
+        expresstype: item.expresstype
+      }
+      window.localStorage.setItem('dispatchDetailDateLeft', GetDateFormate(this.dateLeft))
+      window.localStorage.setItem('dispatchDetailDateRight', GetDateFormate(this.dateRight))
+      this.$router.push({path: '/courier/orderdetail', query})
     }
   }
 }
@@ -137,6 +164,7 @@ export default {
     &-express {
       &-list {
         .flex;      
+        align-items: center;
         padding: 1rem .4rem;
         border-bottom: 1px solid #f1f1f1;
         &-img {

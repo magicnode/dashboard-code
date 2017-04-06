@@ -71,6 +71,7 @@ export default {
     this.$store.commit('SET_TITLE', {title: '快递详情'})
     Indicator.open()
     const query = this.$route.query
+    console.log('order detail query', query)
     axios.get(ApiStore.courierorderdetail, {
       params: query
     }).then(rs => {

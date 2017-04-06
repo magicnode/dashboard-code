@@ -6,7 +6,7 @@
             <span :class="{activeClass: !RisActive}">月份</span>
           </div>
           <div class="dispatch-header-exp__export">
-            <a href="#/export" title="">导出</a>
+            <router-link to="/export">导出</router-link>
           </div>
         </div>
         <div v-show="RisActive">
@@ -22,7 +22,7 @@
             <div class="dispatch-content-title">
               入库 {{dispatch.enter}}
             </div>
-            <div class="dispatch-content-detail">
+            <div class="dispatch-content-detail" @click.stop="goDetail(101, true)">
               <div class="dispatch-content-detail__img">
                 <img src="../assets/sta_ico_sin.png" alt="">
               </div>
@@ -34,7 +34,7 @@
                 {{dispatch.day.Arrive}}
               </div>
             </div>
-            <div class="dispatch-content-detail">
+            <div class="dispatch-content-detail" @click.stop="goDetail(102, true)">
               <div class="dispatch-content-detail__img">
                 <img src="../assets/sta_ico_sto.png" alt="">
               </div>
@@ -46,7 +46,7 @@
                 {{dispatch.day.Invite}}
               </div>
             </div>
-            <div class="dispatch-content-detail">
+            <div class="dispatch-content-detail" @click.stop="goDetail(103, true)">
               <div class="dispatch-content-detail__img">
                 <img src="../assets/sta_ico_dis.png" alt="">
               </div>
@@ -64,7 +64,7 @@
             <div class="dispatch-content-title">
               出库 {{dispatch.out}}
             </div>
-            <div class="dispatch-content-detail">
+            <div class="dispatch-content-detail" @click.stop="goDetail(301, true)">
               <div class="dispatch-content-detail__img">
                 <img src="../assets/sta_ico_sig.png" alt="">
               </div>
@@ -76,7 +76,7 @@
                 {{dispatch.day.Received}}
               </div>
             </div>
-            <div class="dispatch-content-detail">
+            <div class="dispatch-content-detail" @click.stop="goDetail(302, true)">
               <div class="dispatch-content-detail__img">
                 <img src="../assets/sta_ico_ret.png" alt="">
               </div>
@@ -94,7 +94,7 @@
             <div class="dispatch-content-title">
               在库 {{dispatch.inside}}
             </div>
-            <div class="dispatch-content-detail">
+            <div class="dispatch-content-detail" @click.stop="goDetail(1010, true)">
               <div class="dispatch-content-detail__img">
                 <img src="../assets/sta_ico_sin.png" alt="">
               </div>
@@ -106,7 +106,7 @@
                 {{dispatch.day.InArrive}}
               </div>
             </div>
-            <div class="dispatch-content-detail">
+            <div class="dispatch-content-detail" @click.stop="goDetail(1020, true)">
               <div class="dispatch-content-detail__img">
                 <img src="../assets/sta_ico_sto.png" alt="">
               </div>
@@ -118,7 +118,7 @@
                 {{dispatch.day.InInvite}}
               </div>
             </div>
-            <div class="dispatch-content-detail">
+            <div class="dispatch-content-detail" @click.stop="goDetail(1030, true)">
               <div class="dispatch-content-detail__img">
                 <img src="../assets/sta_ico_dis.png" alt="">
               </div>
@@ -261,7 +261,7 @@
 <script>
 import { mapActions, mapGetters } from 'vuex'
 import { getDispatchType } from '../filters'
-import { GetDateStr } from 'helpers'
+import { GetDateStr, GetDateFormate } from 'helpers'
 // import window from 'window'
 import Highcharts from 'highcharts'
 // 在 Highcharts 加载之后加载功能模块
@@ -292,7 +292,7 @@ export default {
   data () {
     return {
       selected: 'tab-container1',
-      RisActive: false,
+      RisActive: true,
       YisActive: false,
       sheetVisible: false,
       actions: [],
@@ -483,6 +483,14 @@ export default {
         this.removeClass(contents[key], 'flex')
       }
       this.addClass(contents[count], 'flex')
+    },
+    goDetail (state, time) {
+      const query = {
+        state,
+        brandId: this.query.brandId,
+        time: GetDateFormate(this.query.time)
+      }
+      this.$router.push({path: '/dispatch/detail', query})
     }
   }
 }
