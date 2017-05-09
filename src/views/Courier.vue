@@ -58,17 +58,17 @@
           date-format="{value} 日"
           @confirm="handleChange">
         </mt-datetime-picker>
-      <mt-actionsheet
-        :actions="actions"
-        v-model="sheetVisible">
-      </mt-actionsheet>
+        <mt-actionsheet
+          :actions="actions"
+          v-model="sheetVisible">
+        </mt-actionsheet>
      </div>
 
 </template>
 <script>
 // import { Toast } from 'mint-ui'
 import { mapActions, mapState, mapGetters } from 'vuex'
-import { GetDateStr, GetDateFormate } from 'helpers'
+import { GetDateStr, GetDateFormate, GetMonthStart } from 'helpers'
 
 export default {
   name: 'courier',
@@ -107,7 +107,7 @@ export default {
       if (this.courier) {
         return
       }
-      const startTime = GetDateStr(-30)
+      const startTime = GetMonthStart()
       const endTime = GetDateStr(0)
       this.setCourierQuery({startTime, endTime, brandId: 0})
     },

@@ -3,7 +3,7 @@
         <div class="dispatch-header-exp">
           <div class="dispatch-header-exp__switch" @click="spanClassChange">
             <span :class="{activeClass: RisActive}">日期</span>
-            <span :class="{activeClass: !RisActive}">月份</span>
+            <span :class="{activeeClass: !RisActive}">月份</span>
           </div>
           <div class="dispatch-header-exp__export">
             <router-link to="/export">导出</router-link>
@@ -262,6 +262,7 @@
 import { mapActions, mapGetters } from 'vuex'
 import { getDispatchType } from '../filters'
 import { GetDateStr, GetDateFormate } from 'helpers'
+import { Toast } from 'mint-ui'
 // import window from 'window'
 import Highcharts from 'highcharts'
 // 在 Highcharts 加载之后加载功能模块
@@ -274,6 +275,11 @@ export default {
     this.initDispatch()
     this.initBrand()
     const that = this
+    if (this.dispatch.error) {
+      Toast({
+        message: '数据获取失败'
+      })
+    }
     setTimeout(function () {
       that.$forceUpdate()
     }, 2000)
@@ -556,9 +562,10 @@ export default {
       padding-left: 1rem;
       justify-content: space-between;
       &-action {
+        background-image: url('../assets/min_ico_2r.png');
+        background-repeat: no-repeat;
         color: rgb(0,0,0);
         padding-right: 2rem;
-        background: url('../assets/min_ico_2r.png') no-repeat;
         background-size: 22% 50%;
         background-position: 92% 60%;
       }
@@ -579,7 +586,7 @@ export default {
       }
 
       &-detail {
-        border-bottom: 1px solid #f1f1f1;
+        border-bottom: 1px solid #dedede;
         padding: .4rem 0;
         display: flex;
         align-items: center;

@@ -41,6 +41,8 @@ Vue.config.productionTip = false
 router.afterEach((to, from) => {
   if (to.path === '/') {
     const query = to.query
+    console.log('qwe', to)
+    console.log('qwe', query)
     return router.push({'path': 'list', 'query': query})
   }
 })

@@ -2,7 +2,7 @@ import * as types from '../mutation-types'
 import window from 'window'
 
 export const state = {
-  userId: null
+  userId: 2367
 }
 
 export const getters = {

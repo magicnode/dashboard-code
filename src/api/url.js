@@ -1,6 +1,6 @@
 let apiUrl = 'http://192.168.0.201:8890'
 if (process.env.NODE_ENV !== 'development') {
-  apiUrl = 'http://app.quandikeji.com:8088/'
+  apiUrl = 'http://app.quandikeji.com:8088'
 }
 
 const ApiStore = {

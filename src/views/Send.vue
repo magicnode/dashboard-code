@@ -4,15 +4,10 @@
      </div>
 </template>
 <script>
-import { Toast } from 'mint-ui'
 
 export default {
   name: 'send',
   created () {
-    Toast({
-      message: '暂未开放, 敬请期待'
-    })
-    this.$router.push({'path': 'list'})
   },
   data () {
     return {

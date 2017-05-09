@@ -20,7 +20,7 @@
           <h1 v-if="expressinfo.length === 0" style="padding-top: 1rem;font-size:1.6rem;">数据为空</h1>
           <div class="dispatch-express-list" v-for="item in expressinfo" @click.stop="goOrderDetail(item)">
               <div class="dispatch-express-list-img">
-                <img :src="item.brandId | brandimg" alt="">
+                <img :src="item.brandId | brandimg" :alt="item.brandId | brand">
               </div>
               <div class="dispatch-express-list-time">
                 <p>{{item.order_sn}}</p>

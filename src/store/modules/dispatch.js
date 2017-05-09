@@ -38,8 +38,9 @@ const actions = {
       params: query
     })
     .then((res) => {
+      let data
       if (res.status === 200) {
-        let data = res.data
+        data = res.data
         data.refresh = 1
         const enter = data.day.Arrive + data.day.Invite + data.day.Send
         const out = data.day.Received + data.day.Back
@@ -49,12 +50,80 @@ const actions = {
         data.out = out
         data.inside = inside
         data.question = question
-        console.log('data', data)
-        console.log('data rs', res.request.responseURL)
-        commit(types.SET_DISPATCH, {data})
+      } else {
+        data = {
+          chart: {
+          },
+          day: {
+            Send: 0,
+            Arrive: 0,
+            Invite: 0,
+            Received: 0,
+            Back: 0,
+            InSend: 0,
+            InArrive: 0,
+            InInvite: 0,
+            Questioned: 0,
+            Questioning: 0
+          },
+          month: {
+            MonthSend: 0,
+            MonthArrive: 0,
+            MonthInvite: 0,
+            MonthReceived: 0,
+            MonthBack: 0,
+            MonthInSend: 0,
+            MonthInArrive: 0,
+            MonthInInvite: 0,
+            MonthQuestioned: 0,
+            MonthQuestioning: 0
+          }
+        }
+        data.enter = 0
+        data.out = 0
+        data.inside = 0
+        data.question = 0
       }
+      console.log('data', data)
+      console.log('data rs', res.request.responseURL)
+      commit(types.SET_DISPATCH, {data})
     })
     .catch(err => {
+      let data = {}
+      data = {
+        chart: {
+        },
+        day: {
+          Send: 0,
+          Arrive: 0,
+          Invite: 0,
+          Received: 0,
+          Back: 0,
+          InSend: 0,
+          InArrive: 0,
+          InInvite: 0,
+          Questioned: 0,
+          Questioning: 0
+        },
+        month: {
+          MonthSend: 0,
+          MonthArrive: 0,
+          MonthInvite: 0,
+          MonthReceived: 0,
+          MonthBack: 0,
+          MonthInSend: 0,
+          MonthInArrive: 0,
+          MonthInInvite: 0,
+          MonthQuestioned: 0,
+          MonthQuestioning: 0
+        }
+      }
+      data.enter = 0
+      data.out = 0
+      data.inside = 0
+      data.question = 0
+      data.error = true
+      commit(types.SET_DISPATCH, {data})
       console.error(err)
     })
   },

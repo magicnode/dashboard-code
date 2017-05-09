@@ -49,4 +49,8 @@ export default {
       }
     }
  }
+ .mint-actionsheet {
+  max-height: 60vh!important;
+  overflow-y: auto;
+ }
 </style>

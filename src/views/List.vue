@@ -3,6 +3,7 @@
         <ul>
             <li v-for="item in lists" @click="handleChange(item.value)">
               <img :src="item.src" alt="">
+              <span></span>
             </li >
         </ul>
      </div>
@@ -67,6 +68,12 @@ export default {
       setUserId: 'setUserId'
     }),
     handleChange (val) {
+      if (val === 'send') {
+        Toast({
+          message: '暂未开放, 敬请期待'
+        })
+        return
+      }
       this.$router.push({path: val})
     }
   }

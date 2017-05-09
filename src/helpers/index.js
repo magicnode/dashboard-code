@@ -40,6 +40,14 @@ export const GetDateFormateMonth = function (date) {
   return y + '-' + m
 }
 
+export const GetMonthStart = function () {
+  const date = new Date()
+  const y = date.getFullYear()
+  let m = date.getMonth() + 1
+  m = m > 10 ? m : '0' + m
+  return y + '-' + m + '-' + '01'
+}
+
 export const feedtype = function (val) {
   const feedtypes = {
     '1': '寄件费',

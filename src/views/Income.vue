@@ -64,7 +64,7 @@
 // import { Toast } from 'mint-ui'
 import { mapState, mapActions, mapGetters } from 'vuex'
 import { getIncomeImg as incomeimg, paytype } from '../filters'
-import { GetDateStr, GetDateFormate } from 'helpers'
+import { GetDateStr, GetDateFormate, GetMonthStart } from 'helpers'
 
 export default {
   name: 'income',
@@ -130,7 +130,7 @@ export default {
       if (this.incomedata.refresh) {
         return
       }
-      const startTime = GetDateStr(-30)
+      const startTime = GetMonthStart()
       const endTime = GetDateStr(0)
       this.setIncomeQuery({startTime, endTime, brandId: 0, type: 0})
     },
@@ -230,7 +230,7 @@ export default {
         .flex;   
         align-items: center;   
         padding: .3rem .4rem;
-        border-bottom: 1px solid #f1f1f1;
+        border-bottom: 1px solid #dedede;
         &-img {
           flex: 1;
           img {

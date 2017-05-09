@@ -19,7 +19,7 @@
             </div>
             <div class="income-tab-content__detail">
               <div class="img">
-                <img :src="item.brandId | brandimg" alt="">
+                <img :src="item.brandId | brandimg" :alt="item.brandId | brand">
               </div>
               <div class="order-id">
                 <p>{{item.order_id}}</p>
