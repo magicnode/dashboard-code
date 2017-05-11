@@ -3,7 +3,7 @@
         <div class="dispatch-header-exp">
           <div class="dispatch-header-exp__switch" @click="spanClassChange">
             <span :class="{activeClass: RisActive}">日期</span>
-            <span :class="{activeeClass: !RisActive}">月份</span>
+            <span :class="{activeClass: !RisActive}">月份</span>
           </div>
           <div class="dispatch-header-exp__export">
             <router-link to="/export">导出</router-link>
@@ -374,7 +374,9 @@ export default {
           tickPixelInterval: 40
         },
         legend: {
-          borderWidth: 0
+          borderWidth: 0,
+          borderRadius: '5px',
+          backgroundColor: '#ff750f'
         },
         series: [{
           name: that.dispatch.months,
@@ -398,8 +400,6 @@ export default {
     },
     handleChangeMonth (val) {
       let date = val
-      console.log('va', val)
-      console.log('va date', typeof date)
       const year = date.getFullYear()
       let month = date.getMonth() + 1
       month = month > 10 ? month : '0' + month
@@ -414,14 +414,14 @@ export default {
       }
       setTimeout(function () {
         changeChart()
-      }, 2000)
+      }, 1500)
     },
     initDispatch () {
       if (this.dispatch.refresh) {
         return
       }
       const time = GetDateStr(0)
-      this.setDispatchQuery({time, brandId: 0, month: '2017-04'})
+      this.setDispatchQuery({time, brandId: 0, month: '2017-05'})
     },
     initBrand () {
       const brands = this.brands
@@ -596,14 +596,14 @@ export default {
         }
         &__img {
           img {
-            width: 50%;
+            width: 3.4rem;
           }
         }
         &__txt {
           text-align: left;
           font-size: 1.4rem;
           p {
-            padding: .5rem 0;
+            padding: .1rem 0;
           }
           span {
             color: #989898;
@@ -658,7 +658,7 @@ export default {
           padding: .5rem;
           border-bottom: 1px solid #ececec;
           img {
-            flex:1;
+            width: 3.4rem;
           }
           p {
             flex: 3;

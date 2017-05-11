@@ -28,7 +28,7 @@ const getters = {
 const actions = {
   changeDispatch ({ commit }) {
     let instance = axios.create({
-      timeout: 2000
+      timeout: 200000
     })
     let query = state.query
     query.userId = window.localStorage.userId
@@ -135,7 +135,7 @@ const actions = {
   },
   changeDispatchDetail ({ commit }) {
     let instance = axios.create({
-      timeout: 2000
+      timeout: 5000
     })
     let query = state.detailquery
     query.userId = window.localStorage.userId

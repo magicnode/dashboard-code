@@ -39,9 +39,6 @@ export default {
     ...mapGetters({
       userId: 'getUserId'
     })
-    // ...mapState({
-    //   userId: modules => modules.user.userId
-    // })
   },
   data () {
     return {

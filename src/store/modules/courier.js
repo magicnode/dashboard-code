@@ -31,7 +31,7 @@ const getters = {
 const actions = {
   changeCourier ({ commit }) {
     let instance = axios.create({
-      timeout: 2000
+      timeout: 5000
     })
     const query = state.courierquery
     const url = ApiStore.courier + '?userId=' + window.localStorage.userId + '&startTime=' + query.startTime + '&endTime=' + query.endTime + '&brandId=' + query.brandId
@@ -65,7 +65,7 @@ const actions = {
   },
   changeCourierDetail ({ commit }, { id }) {
     let instance = axios.create({
-      timeout: 2000
+      timeout: 5000
     })
     const query = state.courierdetailquery[id]
     const url = ApiStore.courierdetail + '?userId=' + window.localStorage.userId + '&id=' + id + '&startTime=' + GetDateFormate(query.startTime) + '&endTime=' + GetDateFormate(query.endTime) + '&brandId=' + query.brandId
@@ -95,7 +95,7 @@ const actions = {
   },
   changeCourierExpress ({ commit }) {
     let instance = axios.create({
-      timeout: 2000
+      timeout: 5000
     })
     const query = state.courierexpress.query
     const url = ApiStore.courierexpress + '?userId=' + window.localStorage.userId + '&state=' + query.expressstate + '&id=' + query.id + '&startTime=' + query.startTime + '&endTime=' + query.endTime + '&brandId=' + query.brandId

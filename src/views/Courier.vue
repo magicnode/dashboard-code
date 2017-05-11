@@ -27,6 +27,7 @@
           </div>
         </div>
         <div class="courier-express">
+          <h1 v-show="!this.courier" style="font-size: 1.6rem;">数据为空</h1>
           <div class="courier-express-list" v-for="item in courier" @click="goDetail(item)">
               <div class="courier-express-list-img">
                 <img :src="item.img | courierimg" alt="">
@@ -69,6 +70,7 @@
 // import { Toast } from 'mint-ui'
 import { mapActions, mapState, mapGetters } from 'vuex'
 import { GetDateStr, GetDateFormate, GetMonthStart } from 'helpers'
+import { Toast } from 'mint-ui'
 
 export default {
   name: 'courier',
@@ -76,6 +78,11 @@ export default {
     this.$store.commit('SET_TITLE', {title: '快递员'})
     this.initCourierData()
     this.initBrand()
+    if (!this.courier) {
+      Toast({
+        message: '数据为空'
+      })
+    }
   },
   data () {
     return {

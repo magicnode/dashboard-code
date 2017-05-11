@@ -24,7 +24,7 @@ const getters = {
 const actions = {
   changeIncome ({ commit }) {
     let instance = axios.create({
-      timeout: 2000
+      timeout: 5000
     })
     let query = state.income.query
     query.userId = window.localStorage.userId
