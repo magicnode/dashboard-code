@@ -12,6 +12,7 @@ import store from './store'
 import {getBrandType, dateFormate, defaultCourierImg, handleNull, expresstype, expressoperation, expressstate, failImg, feetype, getBrandImg} from './filters'
 
 import Chart from './components/Chart'
+import ScaleDrawing from './components/ScaleDrawing'
 
 import 'mint-ui/lib/style.css'
 
@@ -23,6 +24,8 @@ Vue.component('dh-chart', {
   prop: ['data'],
   template: Chart
 })
+
+Vue.component('scale-drawing', ScaleDrawing)
 
 Vue.filter('brand', getBrandType)
 Vue.filter('brandimg', getBrandImg)

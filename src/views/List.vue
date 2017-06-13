@@ -2,7 +2,7 @@
      <div class="list">
         <ul>
             <li v-for="item in lists" @click="handleChange(item.value)">
-              <img :src="item.src" alt="">
+              <img :src="item.src" :alt="item.alt">
               <span></span>
             </li >
         </ul>
@@ -46,16 +46,20 @@ export default {
       title: '统计报表',
       lists: [{
         value: 'dispatch',
-        src: dispatchPng
+        src: dispatchPng,
+        alt: '派件统计'
       }, {
         value: 'send',
-        src: sendPng
+        src: sendPng,
+        alt: '寄件统计'
       }, {
         value: 'income',
-        src: incomePng
+        src: incomePng,
+        alt: '收入统计'
       }, {
         value: 'courier',
-        src: courierPng
+        src: courierPng,
+        alt: '快递员统计'
       }]
     }
   },
@@ -65,12 +69,12 @@ export default {
       setUserId: 'setUserId'
     }),
     handleChange (val) {
-      if (val === 'send') {
-        Toast({
-          message: '暂未开放, 敬请期待'
-        })
-        return
-      }
+      // if (val === 'send') {
+      //   Toast({
+      //     message: '暂未开放, 敬请期待'
+      //   })
+      //   return
+      // }
       this.$router.push({path: val})
     }
   }

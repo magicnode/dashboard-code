@@ -9,6 +9,7 @@ import courier from './modules/courier'
 import dispatch from './modules/dispatch'
 import income from './modules/income'
 import * as user from './modules/user'
+import * as send from './modules/send'
 
 import sendpayPng from '../assets/inc_ico_sen.png'
 import promisePng from '../assets/inc_ico_pro.png'
@@ -22,6 +23,7 @@ const store = new Vuex.Store({
   modules: {
     courier,
     income,
+    send,
     dispatch,
     user
   },

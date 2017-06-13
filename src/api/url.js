@@ -1,4 +1,5 @@
 let apiUrl = 'http://192.168.0.201:8890'
+// let apiUrl = 'http://app.quandikeji.com:8088'
 if (process.env.NODE_ENV !== 'development') {
   apiUrl = 'http://app.quandikeji.com:8088'
 }
@@ -14,7 +15,8 @@ const ApiStore = {
   brand: apiUrl + '/StatisticalReports/allBrand',
   dispatch: apiUrl + '/StatisticalReports/delivery',
   dispatchDetail: apiUrl + '/StatisticalReports/CourierDetails',
-  export: apiUrl + '/StatisticalReports/Email'
+  export: apiUrl + '/StatisticalReports/Email',
+  send: apiUrl + '/StatisticalReports/SendAstatistical'
 }
 
 export default ApiStore
