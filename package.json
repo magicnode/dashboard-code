@@ -13,6 +13,7 @@
     "axios": "^0.15.3",
     "echarts": "^3.5.1",
     "highcharts": "^5.0.10",
+    "jsonp": "^0.2.1",
     "mint-ui": "^2.2.1",
     "vue": "^2.2.2",
     "vue-awesome-swiper": "^2.3.2",

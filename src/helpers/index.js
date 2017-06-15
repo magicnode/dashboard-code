@@ -32,6 +32,12 @@ export const GetDateFormate = function (date) {
   return y + '-' + m + '-' + d
 }
 
+export const GetTimeStamp = function (date) {
+  if (!date) return 0
+  date = new Date(date)
+  return date.getTime()
+}
+
 export const GetDateFormateMonth = function (date) {
   date = new Date(date)
   const y = date.getFullYear()

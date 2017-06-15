@@ -27,8 +27,9 @@
           </div>          
         </div>
         <div class="send-cylinder send-chart">
-          <scale-drawing name="圆通" :count="750" unit="单"></scale-drawing>
-          <scale-drawing name="顺丰" :count="500" unit="单"></scale-drawing>
+          <div v-for="(item, key) in send.mapNum">
+            <scale-drawing :name="key" :count="item" unit="单"></scale-drawing>
+          </div>
         </div>
         <div class="send-second send-chart">
           <div id="chart2" style="width: 100%;min-height:45vh;">
@@ -63,14 +64,26 @@
         </mt-datetime-picker>
      </div>
 </template>
+
 <script>
 // import { Toast } from 'mint-ui'
 import { mapActions, mapGetters } from 'vuex'
 import { getIncomeImg as incomeimg, paytype, getBrandType as brandtype } from '../filters'
-// import { GetDateStr, GetDateFormate, GetMonthStart } from 'helpers'
+import { GetDateStr, GetMonthStart } from 'helpers'
 import Highcharts from 'highcharts'
 // 在 Highcharts 加载之后加载功能模块
 require('highcharts/modules/exporting')(Highcharts)
+require('highcharts/modules/no-data-to-display')(Highcharts)
+// lang 语言设置
+Highcharts.setOptions({
+  lang: {
+    months: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+    shortMonths: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+    weekdays: ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期天'],
+    shortWeekdays: ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期天'],
+    noData: '暂无数据'
+  }
+})
 
 export default {
   name: 'send',
@@ -80,7 +93,7 @@ export default {
       _this.loading = false
     }, 1500)
     this.$store.commit('SET_TITLE', {title: '寄件统计'})
-    this.changeSend()
+    this.initSend()
   },
   data () {
     return {
@@ -88,14 +101,20 @@ export default {
       modalVisi: false,
       sheetVisible: false,
       paysheetVisible: false,
-      actions: []
+      actions: [],
+      areachart: {},
+      piechart: {}
     }
   },
   mounted () {
     const that = this
     // chart1
-    function setChart1 () {
-      that.chart = new Highcharts.Chart('chart1', {
+    let areaChartData = this.send.number || []
+    // let areaChartXlength = areaChartData ? this.numToFloor(areaChartData.length) : 5
+    let pointStart = this.sendquery.startTime
+    pointStart = this.getDateUTCVal(pointStart)
+    function setAreaChart () {
+      that.areachart = new Highcharts.Chart('chart1', {
         chart: {
           type: 'area',
           zoomType: 'x'
@@ -110,23 +129,10 @@ export default {
           }
         },
         xAxis: {
-          // categories: xAxisData,
-          allowDecimals: false,
-          labels: {
-            formatter: function () {
-              // clean, unformatted number for year
-              return this.value
-            },
-            style: {
-              fontSize: '13',
-              color: '#333'
-            },
-            staggerLines: 1
-          },
-          tickInterval: 1,
-          tickLength: 0,
-          lineWidth: 0,
-          tickWidth: 0
+          type: 'datetime',
+          dateTimeLabelFormats: {
+            day: '%Y-%m-%d'
+          }
         },
         yAxis: {
           title: {
@@ -185,13 +191,47 @@ export default {
         },
         series: [{
           name: ' ',
-          data: [2000, 3000, 1000, 1120, 900, 666, 444, 1451, 333, 1201, 50]
-        }]
+          data: areaChartData,
+          pointStart: Date.UTC(pointStart.year, pointStart.month, pointStart.day), // 开始值
+          pointInterval: 24 * 3600 * 1000 // 间隔一天
+        }],
+        noData: {
+          style: {
+            fontWeight: 'bold',
+            fontSize: '15px',
+            color: '#303030'
+          }
+        }
       })
     }
     // chart2
-    function setChart2 () {
-      that.chart = new Highcharts.Chart('chart2', {
+    let pieChatData = this.send.payType || []
+    function getpayType (val) {
+      let str = ''
+      switch (Number(val)) {
+        case 1:
+          str = '支付宝'
+          break
+        case 2:
+          str = '微信'
+          break
+        case 3:
+          str = '线下支付'
+          break
+        case 4:
+          str = '余额'
+          break
+        default:
+          str = '未知'
+          break
+      }
+      return str
+    }
+    for (let i = 0, len = pieChatData.length; i < len; i++) {
+      pieChatData[i][0] = getpayType(pieChatData[i][0])
+    }
+    function setPieChart () {
+      that.piechart = new Highcharts.Chart('chart2', {
         chart: {
           height: 300,
           plotBackgroundColor: null,
@@ -233,23 +273,15 @@ export default {
         },
         series: [{
           type: 'pie',
-          innerSize: '80%',
           name: '金额占比',
-          data: [
-            {name: 'Firefox', y: 60.0},
-            {
-              name: 'Chrome',
-              y: 20.0
-            },
-            ['Safari', 20.0]
-          ]
+          data: pieChatData
         }]
       })
     }
     setTimeout(function () {
-      setChart1()
-      setChart2()
-    }, 1500)
+      setAreaChart()
+      setPieChart()
+    }, 2000)
   },
   filters: {
     incomeimg,
@@ -261,33 +293,115 @@ export default {
       'userId': 'getUserId',
       'brands': 'getBrands',
       'send': 'getSendData',
-      'sendquery': 'getSendQuery'
+      'sendquery': 'getSendQuery',
+      'refresh': 'getSendRefresh'
     })
   },
   methods: {
     ...mapActions([
-      'setIncomeQuery',
+      'setSendQuery',
       'changeSend'
     ]),
+    getDateUTCVal (val) {
+      if (!val) {
+        return {
+          year: 1990,
+          month: 0,
+          day: 10
+        }
+      }
+      val = new Date(val)
+      let utcVal = {
+        year: Number(val.getFullYear()),
+        month: Number(val.getMonth()),
+        day: Number(val.getDay())
+      }
+      return utcVal
+    },
+    numToFloor (val) {
+      val = Number(val)
+      if (!val) return 0
+      let len = val.toString().length || 1
+      let valBo = Number(val.toString().substr(0, len - 1))
+      val = Math.floor(val / valBo)
+      return val
+    },
+    initSend () {
+      if (this.refresh) {
+        return
+      }
+      const startTime = GetMonthStart()
+      const endTime = GetDateStr(0)
+      this.setSendQuery({startTime, endTime})
+    },
     openPicker (picker) {
       this.$refs[picker].open()
     },
-    changeBrand (val) {
-      this.setIncomeQuery({brandId: val})
+    changeAreaChart () {
+      const _this = this
+      let areaChartData = this.send.number || []
+      let pointStart = _this.sendquery.startTime
+      let areaChartXlength = areaChartData ? _this.numToFloor(areaChartData.length) : 5
+      _this.areachart.series[0].update({
+        data: _this.send.number,
+        pointStart: new Date(pointStart).getTime()
+      })
+      _this.areachart.xAxis[0].update({
+        tickInterval: areaChartXlength
+      })
     },
-    changePayType (val) {
-      this.setIncomeQuery({type: val})
+    changePieChart () {
+      const _this = this
+      let pieChatData = this.send.payType
+      function getpayType (val) {
+        let str = ''
+        switch (Number(val)) {
+          case 1:
+            str = '支付宝'
+            break
+          case 2:
+            str = '微信'
+            break
+          case 3:
+            str = '线下支付'
+            break
+          case 4:
+            str = '余额'
+            break
+          default:
+            str = '未知'
+            break
+        }
+        return str
+      }
+      for (let i = 0, len = pieChatData.length; i < len; i++) {
+        pieChatData[i][0] = getpayType(pieChatData[i][0])
+      }
+      console.log('pire', pieChatData)
+      _this.piechart.series[0].update({
+        data: pieChatData
+      })
     },
     handleChangeLeft (val) {
-      this.setIncomeQuery({startTime: val})
+      this.setSendQuery({startTime: val})
+      const _this = this
+      setTimeout(function () {
+        _this.changeAreaChart()
+        _this.changePieChart()
+      }, 1800)
     },
     handleChange (val) {
-      this.setIncomeQuery({endTime: val})
+      this.setSendQuery({endTime: val})
+      const _this = this
+      setTimeout(function () {
+        _this.changeAreaChart()
+        _this.changePieChart()
+      }, 1800)
     }
   }
 }
 </script>
-<!-- Add "scoped" attribute to limit CSS to this component only -->
+ <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less" scoped>
 .page-spinner {
  position: absolute;

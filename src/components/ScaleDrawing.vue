@@ -1,9 +1,9 @@
 <template>
     <div>
       <div class="scaledrawing">
-        <span>{{name}}</span>
+        <span>{{name | brand}}</span>
         <div class="scaledrawing__line">
-          <i :style="'width:' +  count/10 + '%'" class="scaledrawing__line--i"></i>
+          <i :style="'width:' +  iwidth + '%'" class="scaledrawing__line--i"></i>
         </div>
         <span>{{count + unit}}</span>
       </div>
@@ -25,6 +25,26 @@ export default {
     unit: {
       type: String,
       default: ''
+    }
+  },
+  data () {
+    return {
+      iwidth: 0
+    }
+  },
+  created () {
+    const cot = this.count
+    this.iwidth = this.numToPer(cot)
+  },
+  methods: {
+    numToPer (val) {
+      val = Number(val)
+      if (!val) return 0
+      let per = 1
+      let len = val.toString().length
+      per = (len - 2) > 0 ? Math.pow(10, (len - 2)) : 1
+      val = val / per
+      return val
     }
   }
 }
