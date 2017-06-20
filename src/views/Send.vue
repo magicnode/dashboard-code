@@ -16,6 +16,25 @@
           <div class="send-date-cover" style="z-index: 2000;" @click="modalVisi = !modalVisi">
           </div>
         </div>
+        <div class="send-total">
+          <div class="select-back" @click="sheetVisible = !sheetVisible">
+            {{sendquery.brandId | brand}}
+          </div>
+          <mt-actionsheet
+            :actions="actions"
+            v-model="sheetVisible">
+          </mt-actionsheet>
+          <div class="border-both select-back" @click="paysheetVisible = !paysheetVisible">
+               {{sendquery.pay_type | paytype}}
+          </div>
+          <mt-actionsheet
+            :actions="payactions"
+            v-model="paysheetVisible">
+          </mt-actionsheet>
+          <div>
+            共计: ￥{{ send.payType | sendtotalmoney }}
+          </div>
+        </div>
         <div class="send-time">
           <span>{{sendquery.startTime | datestr}}</span>
           <span>--</span>
@@ -68,7 +87,7 @@
 <script>
 // import { Toast } from 'mint-ui'
 import { mapActions, mapGetters } from 'vuex'
-import { getIncomeImg as incomeimg, paytype, getBrandType as brandtype } from '../filters'
+import { getIncomeImg as incomeimg, paytype, getBrandType as brandtype, sendtotalmoney } from '../filters'
 import { GetDateStr, GetMonthStart } from 'helpers'
 import Highcharts from 'highcharts'
 // 在 Highcharts 加载之后加载功能模块
@@ -81,7 +100,8 @@ Highcharts.setOptions({
     shortMonths: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
     weekdays: ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期天'],
     shortWeekdays: ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期天'],
-    noData: '暂无数据'
+    noData: '暂无数据',
+    resetZoom: '重置缩放比例'
   }
 })
 
@@ -94,6 +114,7 @@ export default {
     }, 1500)
     this.$store.commit('SET_TITLE', {title: '寄件统计'})
     this.initSend()
+    this.initBrand()
   },
   data () {
     return {
@@ -102,6 +123,27 @@ export default {
       sheetVisible: false,
       paysheetVisible: false,
       actions: [],
+      payactions: [{
+        name: '全部支付',
+        method: () => {
+          this.setSendQuery({payType: 0})
+        }
+      }, {
+        name: '支付宝支付',
+        method: () => {
+          this.setSendQuery({payType: 1})
+        }
+      }, {
+        name: '微信支付',
+        method: () => {
+          this.setSendQuery({payType: 2})
+        }
+      }, {
+        name: '现金支付',
+        method: () => {
+          this.setSendQuery({payType: 4})
+        }
+      }],
       areachart: {},
       piechart: {}
     }
@@ -192,7 +234,7 @@ export default {
         series: [{
           name: ' ',
           data: areaChartData,
-          pointStart: Date.UTC(pointStart.year, pointStart.month, pointStart.day), // 开始值
+          pointStart: Date.UTC(pointStart.year, pointStart.month, pointStart.day),
           pointInterval: 24 * 3600 * 1000 // 间隔一天
         }],
         noData: {
@@ -206,29 +248,8 @@ export default {
     }
     // chart2
     let pieChatData = this.send.payType || []
-    function getpayType (val) {
-      let str = ''
-      switch (Number(val)) {
-        case 1:
-          str = '支付宝'
-          break
-        case 2:
-          str = '微信'
-          break
-        case 3:
-          str = '线下支付'
-          break
-        case 4:
-          str = '余额'
-          break
-        default:
-          str = '未知'
-          break
-      }
-      return str
-    }
     for (let i = 0, len = pieChatData.length; i < len; i++) {
-      pieChatData[i][0] = getpayType(pieChatData[i][0])
+      pieChatData[i][0] = this.getpayType(pieChatData[i][0])
     }
     function setPieChart () {
       that.piechart = new Highcharts.Chart('chart2', {
@@ -281,12 +302,13 @@ export default {
     setTimeout(function () {
       setAreaChart()
       setPieChart()
-    }, 2000)
+    }, 1200)
   },
   filters: {
     incomeimg,
     paytype,
-    brandtype
+    brandtype,
+    sendtotalmoney
   },
   computed: {
     ...mapGetters({
@@ -314,7 +336,7 @@ export default {
       let utcVal = {
         year: Number(val.getFullYear()),
         month: Number(val.getMonth()),
-        day: Number(val.getDay())
+        day: Number(val.getDate())
       }
       return utcVal
     },
@@ -330,21 +352,57 @@ export default {
       if (this.refresh) {
         return
       }
-      const startTime = GetMonthStart()
+      let startTime = GetMonthStart()
       const endTime = GetDateStr(0)
-      this.setSendQuery({startTime, endTime})
+      this.setSendQuery({startTime, endTime, brandId: 0, payType: 0})
+    },
+    initBrand () {
+      const brands = this.brands
+      this.actions = []
+      for (let i = 0, len = this.brands.length; i < len; i++) {
+        let name = brands[i].brand
+        let item = {
+          name: name,
+          method: () => {
+            this.setSendQuery({brandId: brands[i].id})
+          }
+        }
+        this.actions.push(item)
+      }
     },
     openPicker (picker) {
       this.$refs[picker].open()
+    },
+    getpayType (val) {
+      let str = ''
+      switch (Number(val)) {
+        case 1:
+          str = '支付宝'
+          break
+        case 2:
+          str = '微信'
+          break
+        case 3:
+          str = '余额'
+          break
+        case 4:
+          str = '现金支付'
+          break
+        default:
+          str = val || '未知'
+          break
+      }
+      return str
     },
     changeAreaChart () {
       const _this = this
       let areaChartData = this.send.number || []
       let pointStart = _this.sendquery.startTime
+      pointStart = _this.getDateUTCVal(pointStart)
       let areaChartXlength = areaChartData ? _this.numToFloor(areaChartData.length) : 5
       _this.areachart.series[0].update({
         data: _this.send.number,
-        pointStart: new Date(pointStart).getTime()
+        pointStart: Date.UTC(pointStart.year, pointStart.month, pointStart.day)
       })
       _this.areachart.xAxis[0].update({
         tickInterval: areaChartXlength
@@ -353,56 +411,46 @@ export default {
     changePieChart () {
       const _this = this
       let pieChatData = this.send.payType
-      function getpayType (val) {
-        let str = ''
-        switch (Number(val)) {
-          case 1:
-            str = '支付宝'
-            break
-          case 2:
-            str = '微信'
-            break
-          case 3:
-            str = '线下支付'
-            break
-          case 4:
-            str = '余额'
-            break
-          default:
-            str = '未知'
-            break
-        }
-        return str
-      }
       for (let i = 0, len = pieChatData.length; i < len; i++) {
-        pieChatData[i][0] = getpayType(pieChatData[i][0])
+        pieChatData[i][0] = _this.getpayType(pieChatData[i][0])
       }
-      console.log('pire', pieChatData)
       _this.piechart.series[0].update({
         data: pieChatData
       })
     },
     handleChangeLeft (val) {
       this.setSendQuery({startTime: val})
-      const _this = this
-      setTimeout(function () {
-        _this.changeAreaChart()
-        _this.changePieChart()
-      }, 1800)
     },
     handleChange (val) {
       this.setSendQuery({endTime: val})
+    }
+  },
+  watch: {
+    modalVisi: function (val, oldVal) {
+      const send = window.document.getElementsByClassName('send')[0]
+      const oldClassname = send.className
+      if (val) {
+        send.className += ' send-limit'
+      } else {
+        send.className = oldClassname.replace(/send-limit/g, '')
+      }
+    },
+    send: function (val, oldVal) {
       const _this = this
       setTimeout(function () {
         _this.changeAreaChart()
         _this.changePieChart()
-      }, 1800)
+      }, 1600)
     }
   }
 }
 </script>
  <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less" scoped>
+.send-limit {
+  max-height: 72vh;
+  overflow: hidden;
+}
 .page-spinner {
  position: absolute;
  top: 30%;
@@ -426,6 +474,30 @@ export default {
     background-repeat: no-repeat;
     background-size: 1.6rem 1.7rem;
     background-position: 1.4rem .8rem;
+  }
+
+  &-total {
+    border-top: 1px solid rgb(0, 51, 102);
+    background-color: rgb(11, 85, 122);
+    text-align: center;
+    display: block;
+    color: rgb(255, 255, 255);
+    font-size: 1.5rem;
+    padding: .8rem 0;
+    display: flex;
+    .border-both {
+      border-left: 1px solid #003366;
+      border-right: 1px solid #003366;
+    }
+    .select-back {
+      background: url('../assets/min_ico_3r.png') no-repeat scroll right center transparent;
+      background-size: 14% 41%;
+      background-position: 95% 6px;
+    }
+    div {
+      flex:1;
+      font-size:1.3rem;
+    }
   }
   
   &-time {

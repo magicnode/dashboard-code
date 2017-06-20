@@ -218,6 +218,9 @@ export const feetype = function (val) {
 }
 
 export const paytype = function (val) {
+  if (!val) {
+    return '全部支付'
+  }
   const paytypes = {
     '0': '全部支付',
     '1': '支付宝支付',
@@ -233,4 +236,13 @@ export const getExpresstype = function (val) {
     '1': '普通件'
   }
   return expresstypes[val]
+}
+
+export const sendtotalmoney = function (val) {
+  if (!Array.isArray(val)) return 0
+  let total = 0
+  val.forEach(item => {
+    total += Number(item[1])
+  })
+  return total
 }

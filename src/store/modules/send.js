@@ -7,10 +7,17 @@ import * as types from '../mutation-types'
 
 export const state = {
   refresh: false,
-  data: {},
+  data: {
+    array: [0],
+    mapNum: {},
+    number: [],
+    payType: []
+  },
   query: {
-    startTime: 1487606400000,
-    endTime: 1492704000000
+    startTime: 0,
+    endTime: 0,
+    pay_type: 0,
+    brandId: 0
   }
 }
 
@@ -28,21 +35,22 @@ export const actions = {
       params: {
         userId: window.localStorage.userId,
         startTime: GetTimeStamp(state.query.startTime),
-        endTime: GetTimeStamp(state.query.endTime)
+        endTime: GetTimeStamp(state.query.endTime),
+        pay_type: state.query.pay_type,
+        brandId: state.query.brandId
       }
     })
     .then(res => {
       if (res.status === 200) {
         let data = res.data
-        console.log('res data', data)
         commit(types.SET_SEND, {data})
       }
     })
   },
-  setSendQuery ({dispatch, commit}, {startTime = state.query.startTime, endTime = state.query.endTime}) {
+  setSendQuery ({dispatch, commit}, {startTime = state.query.startTime, endTime = state.query.endTime, brandId = state.query.brandId, payType = state.query.pay_type}) {
     startTime = GetDateFormate(startTime)
     endTime = GetDateFormate(endTime)
-    commit(types.SET_SEND_QUERY, {startTime, endTime})
+    commit(types.SET_SEND_QUERY, {startTime, endTime, brandId, payType})
     dispatch('changeSend')
   }
 }
@@ -52,7 +60,7 @@ export const mutations = {
     state.data = data
     state.refresh = true
   },
-  [types.SET_SEND_QUERY] (state, {startTime, endTime}) {
-    state.query = {startTime, endTime}
+  [types.SET_SEND_QUERY] (state, {startTime, endTime, brandId, payType}) {
+    state.query = {startTime, endTime, brandId, pay_type: payType}
   }
 }

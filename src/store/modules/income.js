@@ -45,10 +45,9 @@ const actions = {
         detail.push({feetype: 4, money: income.num4})
         detail.push({feetype: 5, money: income.num5})
         income.detail = detail
-        let total = income.num1 + income.num2 + income.num3 + income.num4 + income.num5
+        let total = Number(income.num1) + Number(income.num2) + Number(income.num3) + Number(income.num4) + Number(income.num5)
         income.total = total || 0
         income.refresh = true
-        console.log('income', income)
         commit(types.SET_INCOME, {income})
       }
     })
